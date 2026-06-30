@@ -29,7 +29,7 @@ class DashboardCard extends StatelessWidget {
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           CircleAvatar(
             backgroundColor: color.withValues(alpha: 0.08),

@@ -218,7 +218,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           },
                           child: const Text(
                             'Lihat Semua',
-                            style: TextStyle(color: Colors.green),
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 11,
+                              ),
                           ),
                         ),
                       ],
@@ -307,7 +310,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Icon(
                                 Icons.access_time_rounded,
-                                size: 18,
+                                size: 16,
                                 color: Colors.green,
                               ),
                               SizedBox(width: 6),
@@ -321,7 +324,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Icon(
                                 Icons.child_care_rounded,
-                                size: 18,
+                                size: 16,
                                 color: Colors.green,
                               ),
                               SizedBox(width: 6),
@@ -335,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Icon(
                                 Icons.location_on_rounded,
-                                size: 18,
+                                size: 16,
                                 color: Colors.green,
                               ),
                               SizedBox(width: 6),
