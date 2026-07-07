@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'bantuan_screen.dart';
+import 'pengaturan_notifikasi_screen.dart';
+import 'keamanan_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -188,13 +190,32 @@ class ProfileScreen extends StatelessWidget {
 
                   child: Column(
                     children: [
-                      MenuProfile(
+                     MenuProfile(
                         icon: Icons.notifications_none,
-
                         title: 'Notifikasi',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const PengaturanNotifikasiScreen(),
+                            ),
+                          );
+                        },
                       ),
 
-                      MenuProfile(icon: Icons.lock_outline, title: 'Keamanan'),
+                     MenuProfile(
+                        icon: Icons.lock_outline,
+                        title: 'Keamanan',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const KeamananScreen(),
+                            ),
+                          );
+                        },
+                      ),
 
                       MenuProfile(
                         icon: Icons.help_outline,

@@ -37,106 +37,100 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
     }
   }
-Widget _stepCircle(int index) {
-  bool active = index <= currentStep;
 
-  return Center(
-    child: Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: active ? Colors.blue : Colors.grey.shade300,
-      ),
-      child: Center(
-        child: Text(
-          "${index + 1}",
-          style: TextStyle(
-            color: active ? Colors.white : Colors.black54,
-            fontWeight: FontWeight.bold,
+  Widget _stepCircle(int index) {
+    bool active = index <= currentStep;
+
+    return Center(
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: active ? Colors.blue : Colors.grey.shade300,
+        ),
+        child: Center(
+          child: Text(
+            "${index + 1}",
+            style: TextStyle(
+              color: active ? Colors.white : Colors.black54,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
-Widget _line(int index) {
-  bool active = index < currentStep;
+    );
+  }
 
-  return Container(
-    width: 40,
-    height: 3,
-    margin: const EdgeInsets.symmetric(horizontal: 4),
-    decoration: BoxDecoration(
-      color: active ? Colors.blue : Colors.grey.shade300,
-      borderRadius: BorderRadius.circular(10),
-    ),
-  );
-}
+  Widget _line(int index) {
+    bool active = index < currentStep;
 
-Widget _stepLabel(String text, int index) {
-  bool active = index <= currentStep;
-
-  return Center(
-    child: Text(
-      text,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 10,
-        fontWeight: active ? FontWeight.bold : FontWeight.w500,
-        color: active ? Colors.blue : Colors.black54,
+    return Container(
+      width: 40,
+      height: 3,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: active ? Colors.blue : Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(10),
       ),
-    ),
-  );
-}
+    );
+  }
 
- Widget buildStepIndicator() {
-  final labels = [
-    "Data Diri",
-    "Pilih Status",
-    "Buat Password",
-  ];
+  Widget _stepLabel(String text, int index) {
+    bool active = index <= currentStep;
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 30),
-    child: Column(
-      children: [
-
-        // ================= CIRCLE + LINE =================
-        Row(
-          children: [
-            Expanded(child: _stepCircle(0)),
-            _line(0),
-            Expanded(child: _stepCircle(1)),
-            _line(1),
-            Expanded(child: _stepCircle(2)),
-          ],
+    return Center(
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: active ? FontWeight.bold : FontWeight.w500,
+          color: active ? Colors.blue : Colors.black54,
         ),
+      ),
+    );
+  }
 
-        const SizedBox(height: 10),
+  Widget buildStepIndicator() {
+    final labels = ["Data Diri", "Pilih Status", "Buat Password"];
 
-        // ================= LABEL =================
-        Row(
-          children: [
-            Expanded(child: _stepLabel(labels[0], 0)),
-            Expanded(child: _stepLabel(labels[1], 1)),
-            Expanded(child: _stepLabel(labels[2], 2)),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          // ================= CIRCLE + LINE =================
+          Row(
+            children: [
+              Expanded(child: _stepCircle(0)),
+              _line(0),
+              Expanded(child: _stepCircle(1)),
+              _line(1),
+              Expanded(child: _stepCircle(2)),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // ================= LABEL =================
+          Row(
+            children: [
+              Expanded(child: _stepLabel(labels[0], 0)),
+              Expanded(child: _stepLabel(labels[1], 1)),
+              Expanded(child: _stepLabel(labels[2], 2)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget stepDataDiri() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          Image.asset(
-            'assets/images/register1.png',
-            height: 200,
-          ),
+          Image.asset('assets/images/register1.png', height: 200),
 
           const SizedBox(height: 18),
 
@@ -149,12 +143,7 @@ Widget _stepLabel(String text, int index) {
             ),
           ),
 
-          const Text(
-            "Lengkapi data diri Anda",
-            style: TextStyle(
-              fontSize: 12,
-            ),
-          ),
+          const Text("Lengkapi data diri Anda", style: TextStyle(fontSize: 12)),
 
           const SizedBox(height: 25),
 
@@ -198,60 +187,52 @@ Widget _stepLabel(String text, int index) {
 
           const SizedBox(height: 10),
 
-Container(
-  width: double.infinity,
-  margin: const EdgeInsets.only(top: 10),
-  padding: const EdgeInsets.all(12),
-  decoration: BoxDecoration(
-    color: Colors.blue.shade50, // hijau soft
-    borderRadius: BorderRadius.circular(12),
-  ),
-  child: Row(
-    children: [
-
-      // ICON
-      Container(
-        padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: Color.fromARGB(255, 102, 168, 255),
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.lock,
-          size: 18,
-          color: Colors.white,
-        ),
-      ),
-
-      const SizedBox(width: 10),
-
-      // TEXT
-      const Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Data Anda aman bersama kami",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.blue,
-              ),
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50, // hijau soft
+              borderRadius: BorderRadius.circular(12),
             ),
-            SizedBox(height: 2),
-            Text(
-              "Kami menjaga kerahasiaan data pribadi Anda.",
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.black54,
-              ),
+            child: Row(
+              children: [
+                // ICON
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 102, 168, 255),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.lock, size: 18, color: Colors.white),
+                ),
+
+                const SizedBox(width: 10),
+
+                // TEXT
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Data Anda aman bersama kami",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        "Kami menjaga kerahasiaan data pribadi Anda.",
+                        style: TextStyle(fontSize: 11, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ],
-  ),
-),
+          ),
 
           const SizedBox(height: 15),
 
@@ -265,9 +246,7 @@ Container(
                     alamatController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        "Lengkapi data terlebih dahulu",
-                      ),
+                      content: Text("Lengkapi data terlebih dahulu"),
                     ),
                   );
                   return;
@@ -282,36 +261,34 @@ Container(
                 ),
               ),
               child: Row(
-  children: [
+                children: [
+                  const Spacer(),
 
-    const Spacer(),
+                  const Text(
+                    "Lanjut",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
 
-    const Text(
-      "Lanjut",
-      style: TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: 18,
-      ),
-    ),
+                  const Spacer(),
 
-    const Spacer(),
-
-    Container(
-      padding: const EdgeInsets.all(6),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.arrow_forward_ios,
-        size: 14,
-        color: Colors.blue,
-      ),
-    ),
-
-  ],
-),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -336,47 +313,35 @@ Container(
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: selected
-                ? Colors.blue.shade50
-                : Colors.white,
+            color: selected ? Colors.blue.shade50 : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected
-                  ? Colors.blue
-                  : Colors.grey.shade300,
+              color: selected ? Colors.blue : Colors.grey.shade300,
               width: 2,
             ),
           ),
           child: Column(
             children: [
-              Image.asset(
-                image,
-                height: 120,
-              ),
+              Image.asset(image, height: 120),
 
               const SizedBox(height: 10),
 
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
 
-            SizedBox(
-  height: 32,
-  child: Text(
-    subtitle,
-    textAlign: TextAlign.center,
-    maxLines: 2,
-    overflow: TextOverflow.ellipsis,
-    style: const TextStyle(
-      fontSize: 11,
-      color: Colors.grey,
-    ),
-  ),
-),
+              SizedBox(
+                height: 32,
+                child: Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ),
 
               Radio<String>(
                 value: title,
@@ -387,7 +352,7 @@ Container(
                     selectedStatus = value!;
                   });
                 },
-              )
+              ),
             ],
           ),
         ),
@@ -400,8 +365,6 @@ Container(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-        
-
           const Text(
             "Langkah 2 dari 3",
             style: TextStyle(
@@ -411,12 +374,7 @@ Container(
             ),
           ),
 
-          const Text(
-            "Pilih status Anda",
-             style: TextStyle(
-              fontSize: 12,
-            ),
-          ),
+          const Text("Pilih status Anda", style: TextStyle(fontSize: 12)),
 
           const SizedBox(height: 20),
 
@@ -424,125 +382,112 @@ Container(
             children: [
               statusCard(
                 title: "Ibu Hamil",
-                 subtitle: "Saya sedang mengandung",
+                subtitle: "Saya sedang mengandung",
                 image: "assets/images/hamil.png",
-                
               ),
-              
 
               const SizedBox(width: 12),
 
               statusCard(
                 title: "Orang Tua Balita",
-                  subtitle: "Saya memiliki anak usia 0-5 tahun",
+                subtitle: "Saya memiliki anak usia 0-5 tahun",
                 image: "assets/images/balita.png",
               ),
             ],
           ),
 
- const SizedBox(height: 25),
+          const SizedBox(height: 25),
 
-Container(
-  width: double.infinity,
-  margin: const EdgeInsets.only(top: 10),
-  padding: const EdgeInsets.all(12),
-  decoration: BoxDecoration(
-    color: Colors.blue.shade50, // hijau soft
-    borderRadius: BorderRadius.circular(12),
-  ),
-  child: Row(
-    children: [
-
-      // ICON
-      Container(
-        padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: Color.fromARGB(255, 102, 168, 255),
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.lightbulb,
-          size: 18,
-          color: Colors.white,
-        ),
-      ),
-
-      const SizedBox(width: 10),
-
-      // TEXT
-      const Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Pilih sesuai kondisi anda saat ini",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.blue,
-              ),
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50, // hijau soft
+              borderRadius: BorderRadius.circular(12),
             ),
-            SizedBox(height: 2),
-            Text(
-              "Data ini membantu kami memberikan informasi yang tepat untuk Anda.",
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.black54,
-              ),
+            child: Row(
+              children: [
+                // ICON
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 102, 168, 255),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.lightbulb,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                // TEXT
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Pilih sesuai kondisi anda saat ini",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        "Data ini membantu kami memberikan informasi yang tepat untuk Anda.",
+                        style: TextStyle(fontSize: 11, color: Colors.black54),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ],
-  ),
-),
+          ),
 
-
-         const SizedBox(height: 25),
+          const SizedBox(height: 25),
 
           SizedBox(
             width: double.infinity,
             height: 55,
             child: ElevatedButton(
-              onPressed: selectedStatus.isEmpty
-                  ? null
-                  : nextStep,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-              ),
+              onPressed: selectedStatus.isEmpty ? null : nextStep,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
               child: Row(
-  children: [
+                children: [
+                  const Spacer(),
 
-    const Spacer(),
+                  const Text(
+                    "Lanjut",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
 
-    const Text(
-      "Lanjut",
-      style: TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: 18,
-      ),
-    ),
+                  const Spacer(),
 
-    const Spacer(),
-
-    Container(
-      padding: const EdgeInsets.all(6),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.arrow_forward_ios,
-        size: 14,
-        color: Colors.blue,
-      ),
-    ),
-
-  ],
-),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -553,10 +498,7 @@ Container(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          Image.asset(
-            'assets/images/password.png',
-            height: 180,
-          ),
+          Image.asset('assets/images/password.png', height: 180),
 
           const SizedBox(height: 20),
 
@@ -569,12 +511,7 @@ Container(
             ),
           ),
 
-          const Text(
-            "Buat password akun Anda",
-             style: TextStyle(
-              fontSize: 12,
-            ),
-          ),
+          const Text("Buat password akun Anda", style: TextStyle(fontSize: 12)),
 
           const SizedBox(height: 20),
 
@@ -586,9 +523,7 @@ Container(
               prefixIcon: const Icon(Icons.lock),
               suffixIcon: IconButton(
                 icon: Icon(
-                  hidePassword
-                      ? Icons.visibility_off
-                      : Icons.visibility,
+                  hidePassword ? Icons.visibility_off : Icons.visibility,
                 ),
                 onPressed: () {
                   setState(() {
@@ -612,14 +547,11 @@ Container(
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
                 icon: Icon(
-                  hideConfirmPassword
-                      ? Icons.visibility_off
-                      : Icons.visibility,
+                  hideConfirmPassword ? Icons.visibility_off : Icons.visibility,
                 ),
                 onPressed: () {
                   setState(() {
-                    hideConfirmPassword =
-                        !hideConfirmPassword;
+                    hideConfirmPassword = !hideConfirmPassword;
                   });
                 },
               ),
@@ -639,14 +571,11 @@ Container(
               borderRadius: BorderRadius.circular(15),
             ),
             child: const Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   "Tips Password",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
                 Text("• Minimal 8 karakter"),
@@ -664,37 +593,23 @@ Container(
             child: ElevatedButton(
               onPressed: () {
                 if (passwordController.text.length < 8) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        "Password minimal 8 karakter",
-                      ),
+                      content: Text("Password minimal 8 karakter"),
                     ),
                   );
                   return;
                 }
 
-                if (passwordController.text !=
-                    confirmPasswordController.text) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        "Password tidak sama",
-                      ),
-                    ),
+                if (passwordController.text != confirmPasswordController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Password tidak sama")),
                   );
                   return;
                 }
 
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Registrasi berhasil",
-                    ),
-                  ),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Registrasi berhasil")),
                 );
 
                 Navigator.pop(context);
@@ -707,12 +622,10 @@ Container(
               ),
               child: const Text(
                 "BUAT AKUN",
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+                style: TextStyle(color: Colors.white),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -720,110 +633,75 @@ Container(
 
   @override
   @override
-Widget build(BuildContext context) {
-  return PopScope(
-    canPop: currentStep == 0,
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: currentStep == 0,
 
-    onPopInvokedWithResult: (didPop, result) {
-      if (!didPop && currentStep > 0) {
-        previousStep();
-      }
-    },
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && currentStep > 0) {
+          previousStep();
+        }
+      },
 
-    child: Scaffold(
-      backgroundColor: const Color(0xffF7FAF5),
+      child: Scaffold(
+        backgroundColor: const Color(0xffF7FAF5),
 
-      body: SafeArea(
-        child: Column(
-          children: [
+        body: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
 
-            const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-              ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        if (currentStep > 0) {
+                          previousStep();
+                        } else {
+                          Navigator.pop(context);
+                        }
+                      },
 
-              child: Row(
-                children: [
-
-                  IconButton(
-                    onPressed: () {
-
-                      if (currentStep > 0) {
-
-                        previousStep();
-
-                      } else {
-
-                        Navigator.pop(context);
-
-                      }
-
-                    },
-
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.blue,
+                      icon: const Icon(Icons.arrow_back, color: Colors.blue),
                     ),
-                  ),
 
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          "Daftar Akun",
 
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        "Daftar Akun",
-
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-
-                  const SizedBox(
-                    width: 48,
-                  ),
-
-                ],
-              ),
-            ),
-
-
-            const SizedBox(height: 15),
-
-
-            buildStepIndicator(),
-
-
-            Expanded(
-
-              child: IndexedStack(
-
-                index: currentStep,
-
-                children: [
-
-                  stepDataDiri(),
-
-                  stepStatus(),
-
-                  stepPassword(),
-
-                ],
-
+                    const SizedBox(width: 48),
+                  ],
+                ),
               ),
 
-            ),
+              const SizedBox(height: 15),
 
-          ],
+              buildStepIndicator(),
+
+              Expanded(
+                child: IndexedStack(
+                  index: currentStep,
+
+                  children: [stepDataDiri(), stepStatus(), stepPassword()],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
-}
-

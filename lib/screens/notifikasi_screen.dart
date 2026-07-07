@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pengaturan_notifikasi_screen.dart';
 
 class NotifikasiScreen extends StatelessWidget {
   const NotifikasiScreen({super.key});
@@ -44,11 +45,15 @@ class NotifikasiScreen extends StatelessWidget {
                   ),
 
                   IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.settings,
-                      color: Colors.blue,
-                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PengaturanNotifikasiScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.settings, color: Colors.blue),
                   ),
 
                 ],

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../widgets/dashboard_card.dart';
 import '../widgets/section_card.dart';
 import 'notifikasi_screen.dart';
-import 'riwayat_mbg_screen.dart';
+import 'terima_mbg_screen.dart';
+import 'riwayat_penilaian_screen.dart';
 import '../widgets/riwayat_item.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -212,7 +213,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const RiwayatMBGScreen(),
+                                builder: (context) => const RiwayatPenilaianScreen(),
                               ),
                             );
                           },
