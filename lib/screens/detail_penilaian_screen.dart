@@ -153,16 +153,82 @@ class DetailPenilaianScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      fotoUrl,
-                      width: double.infinity,
-                      height: 220,
-                      fit: BoxFit.cover,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FullImageScreen(imageUrl: fotoUrl),
+                        ),
+                      );
+                    },
+
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+
+                      child: Image.network(
+                        fotoUrl,
+
+                        width: double.infinity,
+
+                        height: 220,
+
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FullImageScreen extends StatelessWidget {
+  final String imageUrl;
+
+  const FullImageScreen({super.key, required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.8,
+
+                maxScale: 5,
+
+                child: Image.network(imageUrl, fit: BoxFit.contain),
+              ),
+            ),
+
+            Positioned(
+              top: 10,
+
+              left: 10,
+
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+
+                  shape: BoxShape.circle,
+                ),
+
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                ),
               ),
             ),
           ],
