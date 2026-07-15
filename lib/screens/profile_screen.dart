@@ -7,6 +7,8 @@ import 'bantuan_screen.dart';
 import 'pengaturan_notifikasi_screen.dart';
 import 'keamanan_screen.dart';
 import 'edit_profile_screen.dart';
+import '../core/config/api_config.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,8 +17,12 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
+
+
 class _ProfileScreenState extends State<ProfileScreen> {
+
   static const primaryBlue = Color(0xFF1976D2);
+
 
   String nama = "-";
   String phone = "-";
@@ -29,7 +35,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String gender = "-";
   String photo = "-";
 
+
   bool isLoading = true;
+
+
 
   @override
   void initState() {
@@ -37,403 +46,1430 @@ class _ProfileScreenState extends State<ProfileScreen> {
     loadUser();
   }
 
+
+
+
   Future<void> loadUser() async {
+
     final user = await SecureStorage.getUser();
 
-    if (!mounted) return;
 
-    if (user != null) {
+    if(!mounted) return;
+
+
+
+    if(user != null){
+
+
       final profile = user['profile'];
 
+
+
       setState(() {
+
+
         nama = user['name'] ?? "-";
         phone = user['phone'] ?? "-";
         email = user['email'] ?? "-";
 
-        if (profile != null) {
+
+
+        if(profile != null){
+
+
           alamat = profile['address'] ?? "-";
+
           nik = profile['nik'] ?? "-";
+
           birthDate = profile['birth_date'] ?? "-";
+
           photo = profile['photo'] ?? "-";
 
-          switch (profile['gender']) {
-            case 'male':
+
+
+          switch(profile['gender']){
+
+            case "male":
               gender = "Laki-laki";
               break;
-            case 'female':
+
+
+            case "female":
               gender = "Perempuan";
               break;
+
+
             default:
               gender = "-";
+
           }
 
-          switch (profile['beneficiary_type']) {
-            case 'pregnant':
+
+
+
+          switch(profile['beneficiary_type']){
+
+
+            case "pregnant":
+
               beneficiaryType = "Ibu Hamil";
+
               break;
-            case 'parent':
+
+
+
+            case "toddler_parent":
+
               beneficiaryType = "Orang Tua Balita";
+
               break;
+
+
+
             default:
+
               beneficiaryType = "-";
+
           }
+
+
+
         }
 
+
+
         isLoading = false;
+
+
       });
-    } else {
+
+
+
+    }else{
+
+
       setState(() {
+
         isLoading = false;
+
       });
+
+
     }
+
+
   }
+
+
+
+
+
+  String displayValue(String value){
+
+    if(value.isEmpty || value=="-"){
+
+      return "Belum diisi";
+
+    }
+
+
+    return value;
+
+  }
+
+
+
+
+
+  ImageProvider getProfileImage(){
+
+
+    if(photo.isEmpty || photo=="-"){
+
+      return const AssetImage(
+        "assets/images/balita.png",
+      );
+
+    }
+
+
+    return NetworkImage(
+  ApiConfig.imageUrl(photo),
+);
+
+
+  }
+
+
+
+
+
+
 
   Future<void> logout() async {
+
+
     await SecureStorage.logout();
 
-    if (!mounted) return;
+
+
+    if(!mounted) return;
+
+
 
     Navigator.pushAndRemoveUntil(
+
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
+
+      MaterialPageRoute(
+
+        builder: (_) => const LoginScreen(),
+
+      ),
+
+      (route)=>false,
+
     );
+
+
   }
+
+
+
+
 
   Future<void> _openEditProfile() async {
+
+
     final result = await Navigator.push(
+
       context,
-      MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+
+      MaterialPageRoute(
+
+        builder: (_) => const EditProfileScreen(),
+
+      ),
+
     );
 
-    if (result == true) {
+
+
+    if(result == true){
+
       loadUser();
+
     }
+
+
   }
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+
+
+    if(isLoading){
+
+      return const Scaffold(
+
+        body: Center(
+
+          child:CircularProgressIndicator(),
+
+        ),
+
+      );
+
     }
+
+
+
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
+
+      backgroundColor:Colors.white,
+
+
+      body:SafeArea(
+
+
+        child:SingleChildScrollView(
+
+
+          padding:
+          const EdgeInsets.only(bottom:30),
+
+
+
+          child:Column(
+
+
+            children:[
+
+
+
+
+
+              // HEADER PROFILE
+
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(top: 30, bottom: 35),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF1976D2), Color(0xFF64B5F6)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(35),
-                    bottomRight: Radius.circular(35),
-                  ),
+
+
+                width:double.infinity,
+
+
+                padding:
+                const EdgeInsets.only(
+
+                  top:35,
+
+                  bottom:30,
+
                 ),
-                child: Column(
-                  children: [
+
+
+
+                decoration:
+                const BoxDecoration(
+
+
+                  gradient:
+                  LinearGradient(
+
+
+                    colors:[
+
+                      Color(0xFF1976D2),
+
+                      Color(0xFF64B5F6),
+
+                    ],
+
+
+                  ),
+
+
+
+                  borderRadius:
+                  BorderRadius.only(
+
+                    bottomLeft:
+                    Radius.circular(35),
+
+
+                    bottomRight:
+                    Radius.circular(35),
+
+                  ),
+
+
+
+                ),
+
+
+
+
+                child:Column(
+
+
+                  children:[
+
+
+
                     CircleAvatar(
-                      radius: 55,
-                      backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage: (photo != "-" && photo.isNotEmpty)
-                            ? NetworkImage(photo)
-                            : const AssetImage("assets/images/balita.png")
-                                  as ImageProvider,
+
+
+                      radius:55,
+
+
+                      backgroundColor:
+                      Colors.white,
+
+
+
+                      child:CircleAvatar(
+
+
+                        radius:50,
+
+
+                        backgroundImage:
+                        getProfileImage(),
+
+
+
                       ),
+
+
                     ),
 
-                    const SizedBox(height: 15),
+
+
+
+                    const SizedBox(height:15),
+
+
+
+
 
                     Text(
-                      nama,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
+
+                      displayValue(nama),
+
+                      style:
+                      const TextStyle(
+
+                        color:Colors.white,
+
+                        fontSize:25,
+
+                        fontWeight:
+                        FontWeight.bold,
+
                       ),
+
                     ),
 
-                    const SizedBox(height: 5),
+
+
+
+
+                    const SizedBox(height:5),
+
+
+
 
                     Text(
-                      beneficiaryType,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
+
+                      displayValue(beneficiaryType),
+
+                      style:
+                      const TextStyle(
+
+                        color:
+                        Colors.white70,
+
                       ),
+
                     ),
 
-                    const SizedBox(height: 15),
+
+
+
+                    const SizedBox(height:15),
+
+
+
+
 
                     ElevatedButton.icon(
-                      onPressed: _openEditProfile,
-                      icon: const Icon(Icons.edit),
-                      label: const Text("Edit Profile"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: primaryBlue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+
+
+                      onPressed:
+                      _openEditProfile,
+
+
+                      icon:
+                      const Icon(Icons.edit),
+
+
+                      label:
+                      const Text(
+                        "Edit Profil",
+                      ),
+
+
+
+
+                      style:
+                      ElevatedButton.styleFrom(
+
+
+                        backgroundColor:
+                        Colors.white,
+
+
+                        foregroundColor:
+                        primaryBlue,
+
+
+                        shape:
+                        RoundedRectangleBorder(
+
+                          borderRadius:
+                          BorderRadius.circular(20),
+
                         ),
+
                       ),
+
+
+
                     ),
+
+
+
                   ],
+
+
                 ),
+
+
+
               ),
 
-              const SizedBox(height: 20),
+
+
+              const SizedBox(height:20),
+
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Column(
-                  children: [
-                    ProfileCard(
+
+                padding:
+                const EdgeInsets.symmetric(horizontal:18),
+
+
+                child:Column(
+
+                  children:[
+
+
+                    // LANJUT BAGIAN 2
+                    // =========================
+                    // INFORMASI AKUN
+                    // =========================
+
+                    ProfileInfoCard(
+
+                      title: "Informasi Akun",
+
                       icon: Icons.person_outline,
-                      title: "Nama Lengkap",
-                      value: nama,
-                      color: Colors.blue,
+
+
+                      children: [
+
+                        ProfileItem(
+                          label: "Nama Lengkap",
+                          value: displayValue(nama),
+                        ),
+
+
+                        ProfileItem(
+                          label: "Nomor Telepon",
+                          value: displayValue(phone),
+                        ),
+
+
+                        ProfileItem(
+                          label: "Email",
+                          value: displayValue(email),
+                        ),
+
+                      ],
+
                     ),
 
-                    ProfileCard(
-                      icon: Icons.phone_outlined,
-                      title: "Nomor Telepon",
-                      value: phone,
-                      color: Colors.green,
-                    ),
 
-                    ProfileCard(
-                      icon: Icons.email_outlined,
-                      title: "Email",
-                      value: email,
-                      color: Colors.indigo,
-                    ),
 
-                    ProfileCard(
+                    const SizedBox(height:15),
+
+
+
+
+
+                    // =========================
+                    // DATA PRIBADI
+                    // =========================
+
+
+                    ProfileInfoCard(
+
+                      title: "Data Pribadi",
+
                       icon: Icons.badge_outlined,
-                      title: "NIK",
-                      value: nik,
-                      color: Colors.teal,
+
+
+                      children: [
+
+
+                        ProfileItem(
+
+                          label:"NIK",
+
+                          value:displayValue(nik),
+
+                        ),
+
+
+
+
+                        ProfileItem(
+
+                          label:"Tanggal Lahir",
+
+                          value:displayValue(birthDate),
+
+                        ),
+
+
+
+
+
+                        ProfileItem(
+
+                          label:"Jenis Kelamin",
+
+                          value:displayValue(gender),
+
+                        ),
+
+
+
+
+
+                        ProfileItem(
+
+                          label:"Alamat",
+
+                          value:displayValue(alamat),
+
+                        ),
+
+
+
+
+                        ProfileItem(
+
+                          label:"Status Penerima",
+
+                          value:
+                          displayValue(beneficiaryType),
+
+                        ),
+
+
+
+                       
+
+
+                      ],
+
+
                     ),
 
-                    ProfileCard(
-                      icon: Icons.cake_outlined,
-                      title: "Tanggal Lahir",
-                      value: birthDate,
-                      color: Colors.pink,
-                    ),
 
-                    ProfileCard(
-                      icon: Icons.wc_outlined,
-                      title: "Jenis Kelamin",
-                      value: gender,
-                      color: Colors.deepPurple,
-                    ),
 
-                    ProfileCard(
-                      icon: Icons.location_on_outlined,
-                      title: "Alamat",
-                      value: alamat,
-                      color: Colors.orange,
-                    ),
 
-                    ProfileCard(
-                      icon: Icons.child_care_outlined,
-                      title: "Status Penerima",
-                      value: beneficiaryType,
-                      color: Colors.purple,
-                    ),
+                    const SizedBox(height:15),
 
-                    ProfileCard(
-                      icon: Icons.image_outlined,
-                      title: "Foto Profil",
-                      value: photo == "-" ? "-" : "Sudah diunggah",
-                      color: Colors.brown,
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 20),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.15),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      MenuProfile(
-                        icon: Icons.notifications_none,
-                        title: "Notifikasi",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
+
+
+                    // =========================
+                    // MENU
+                    // =========================
+
+
+                    Container(
+
+
+                      decoration:BoxDecoration(
+
+
+                        color:Colors.white,
+
+
+                        borderRadius:
+                        BorderRadius.circular(22),
+
+
+
+                        border:Border.all(
+
+
+                          color:
+                          Colors.grey.withValues(
+                            alpha:0.15,
+                          ),
+
+
+                        ),
+
+
+                      ),
+
+
+
+
+                      child:Column(
+
+
+                        children:[
+
+
+
+                          MenuProfile(
+
+                            icon:
+                            Icons.notifications_none,
+
+                            title:
+                            "Notifikasi",
+
+
+                            onTap:(){
+
+
+                              Navigator.push(
+
+
+                                context,
+
+
+                                MaterialPageRoute(
+
+
+                                  builder:(_)=>
                                   const PengaturanNotifikasiScreen(),
-                            ),
-                          );
-                        },
+
+
+                                ),
+
+
+                              );
+
+
+                            },
+
+
+                          ),
+
+
+
+
+
+                          MenuProfile(
+
+
+                            icon:
+                            Icons.lock_outline,
+
+
+                            title:
+                            "Keamanan",
+
+
+
+                            onTap:(){
+
+
+                              Navigator.push(
+
+
+                                context,
+
+
+                                MaterialPageRoute(
+
+
+                                  builder:(_)=>
+                                  const KeamananScreen(),
+
+
+                                ),
+
+
+                              );
+
+
+                            },
+
+                          ),
+
+
+
+
+
+                          MenuProfile(
+
+
+                            icon:
+                            Icons.help_outline,
+
+
+                            title:
+                            "Bantuan",
+
+
+
+                            onTap:(){
+
+
+                              Navigator.push(
+
+
+                                context,
+
+
+                                MaterialPageRoute(
+
+
+                                  builder:(_)=>
+                                  const BantuanScreen(),
+
+
+                                ),
+
+
+                              );
+
+
+                            },
+
+
+                          ),
+
+
+
+
+
+                          MenuProfile(
+
+
+                            icon:
+                            Icons.logout,
+
+
+                            title:
+                            "Keluar",
+
+
+
+                            color:
+                            Colors.red,
+
+
+
+                            onTap:
+                            logout,
+
+
+                          ),
+
+
+
+                        ],
+
+
                       ),
 
-                      MenuProfile(
-                        icon: Icons.lock_outline,
-                        title: "Keamanan",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const KeamananScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      MenuProfile(
-                        icon: Icons.help_outline,
-                        title: "Bantuan",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const BantuanScreen(),
-                            ),
-                          );
-                        },
-                      ),
 
-                      MenuProfile(
-                        icon: Icons.logout,
-                        title: "Keluar",
-                        color: Colors.red,
-                        onTap: logout,
-                      ),
-                    ],
-                  ),
+                    ),
+
+
+
+                  ],
+
+
                 ),
+
+
               ),
 
-              const SizedBox(height: 30),
+
             ],
+
+
           ),
+
+
         ),
+
+
       ),
+
+
     );
+
+
   }
+
+
 }
 
-// ==========================
-// PROFILE CARD
-// ==========================
 
-class ProfileCard extends StatelessWidget {
-  final IconData icon;
+
+// =====================================
+// PROFILE INFO CARD
+// =====================================
+
+class ProfileInfoCard extends StatelessWidget {
+
+
   final String title;
-  final String value;
-  final Color color;
 
-  const ProfileCard({
+  final IconData icon;
+
+  final List<Widget> children;
+
+
+
+  const ProfileInfoCard({
+
     super.key,
-    required this.icon,
+
     required this.title,
-    required this.value,
-    required this.color,
+
+    required this.icon,
+
+    required this.children,
+
   });
+
+
 
   @override
   Widget build(BuildContext context) {
+
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color),
+
+
+      width:double.infinity,
+
+
+      padding:
+      const EdgeInsets.all(18),
+
+
+
+      decoration:BoxDecoration(
+
+
+        color:Colors.white,
+
+
+        borderRadius:
+        BorderRadius.circular(22),
+
+
+
+        border:Border.all(
+
+
+          color:
+          Colors.grey.withValues(
+            alpha:0.15,
           ),
 
-          const SizedBox(width: 14),
+
+        ),
+
+
+
+        boxShadow:[
+
+
+          BoxShadow(
+
+
+            color:
+            Colors.black.withValues(
+              alpha:0.04,
+            ),
+
+
+
+            blurRadius:10,
+
+
+            offset:
+            const Offset(0,4),
+
+
+          ),
+
+
+        ],
+
+
+
+      ),
+
+
+
+
+
+      child:Column(
+
+
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+
+
+        children:[
+
+
+
+          Row(
+
+
+            children:[
+
+
+
+              Container(
+
+
+                width:42,
+
+
+                height:42,
+
+
+
+                decoration:BoxDecoration(
+
+
+                  color:
+                  const Color(0xFF1976D2)
+                      .withValues(
+                    alpha:0.1,
+                  ),
+
+
+
+                  shape:
+                  BoxShape.circle,
+
+
+                ),
+
+
+
+                child:Icon(
+
+
+                  icon,
+
+
+                  color:
+                  const Color(0xFF1976D2),
+
+
+                ),
+
+
+              ),
+
+
+
+
+              const SizedBox(width:12),
+
+
+
+
+              Text(
+
+
+                title,
+
+
+                style:
+                const TextStyle(
+
+
+                  fontSize:17,
+
+
+                  fontWeight:
+                  FontWeight.bold,
+
+
+                ),
+
+
+              ),
+
+
+
+            ],
+
+
+
+          ),
+
+
+
+
+
+          const SizedBox(height:18),
+
+
+
+
+
+          ...children,
+
+
+
+        ],
+
+
+
+      ),
+
+
+
+    );
+
+
+  }
+
+
+}
+
+
+
+
+
+
+
+// =====================================
+// PROFILE ITEM
+// =====================================
+
+
+class ProfileItem extends StatelessWidget {
+
+
+  final String label;
+
+  final String value;
+
+
+
+  const ProfileItem({
+
+
+    super.key,
+
+
+    required this.label,
+
+
+    required this.value,
+
+
+  });
+
+
+
+  @override
+  Widget build(BuildContext context) {
+
+
+
+    return Padding(
+
+
+      padding:
+      const EdgeInsets.only(
+        bottom:12,
+      ),
+
+
+
+      child:Row(
+
+
+
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+
+
+
+        children:[
+
+
+
 
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
 
-                const SizedBox(height: 5),
 
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
+            flex:2,
+
+
+            child:Text(
+
+
+              label,
+
+
+              style:
+              const TextStyle(
+
+
+                color:
+                Colors.black54,
+
+
+                fontSize:13,
+
+
+              ),
+
+
             ),
+
+
+
           ),
+
+
+
+
+          const SizedBox(width:10),
+
+
+
+
+
+          Expanded(
+
+
+            flex:3,
+
+
+            child:Text(
+
+
+              value,
+
+
+
+              textAlign:
+              TextAlign.right,
+
+
+
+              style:
+              const TextStyle(
+
+
+
+                fontSize:14,
+
+
+                fontWeight:
+                FontWeight.w600,
+
+
+
+              ),
+
+
+            ),
+
+
+          ),
+
+
+
         ],
+
+
       ),
+
+
+
     );
+
+
   }
+
+
 }
 
-// ==========================
+
+
+
+
+
+
+
+// =====================================
 // MENU PROFILE
-// ==========================
+// =====================================
+
 
 class MenuProfile extends StatelessWidget {
+
+
   final IconData icon;
+
   final String title;
+
   final Color color;
+
   final VoidCallback? onTap;
 
+
+
   const MenuProfile({
+
+
     super.key,
+
+
     required this.icon,
+
+
     required this.title,
+
+
     this.color = Colors.black87,
+
+
     this.onTap,
+
+
   });
+
+
+
 
   @override
   Widget build(BuildContext context) {
+
+
+
     return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(color: color, fontWeight: FontWeight.w600),
+
+
+
+      contentPadding:
+      const EdgeInsets.symmetric(
+        horizontal:18,
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap,
+
+
+
+
+      leading:Container(
+
+
+        width:42,
+
+
+        height:42,
+
+
+
+        decoration:BoxDecoration(
+
+
+          color:
+          color.withValues(
+            alpha:0.1,
+          ),
+
+
+
+          shape:
+          BoxShape.circle,
+
+
+        ),
+
+
+
+        child:Icon(
+
+
+          icon,
+
+
+          color:color,
+
+
+          size:22,
+
+
+        ),
+
+
+
+      ),
+
+
+
+
+
+      title:Text(
+
+
+        title,
+
+
+        style:
+        TextStyle(
+
+
+          color:color,
+
+
+          fontWeight:
+          FontWeight.w600,
+
+
+        ),
+
+
+      ),
+
+
+
+
+
+      trailing:
+      const Icon(
+
+
+        Icons.arrow_forward_ios,
+
+
+        size:16,
+
+
+        color:Colors.grey,
+
+
+      ),
+
+
+
+
+
+      onTap:onTap,
+
+
+
     );
+
+
+
   }
+
+
 }

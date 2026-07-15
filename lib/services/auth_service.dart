@@ -31,7 +31,11 @@ class AuthService {
 
       return result;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Login gagal');
+       final message = e.response?.data is Map<String, dynamic>
+      ? e.response?.data['message']?.toString()
+      : e.message;
+
+      throw Exception(message ?? 'Login gagal');
     }
   }
 
