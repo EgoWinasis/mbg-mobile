@@ -35,6 +35,25 @@ class ApiConfig {
       '$baseUrl/profile/photo';
 
 
+
+  // EDUKASI
+  static const String categories =
+      '$baseUrl/education/categories';
+
+  static const String articles =
+      '$baseUrl/education/articles';
+
+  static String articleDetail(String slug) =>
+      '$baseUrl/education/articles/$slug';
+
+
+  static const String mbgMenu = '$baseUrl/mbg/menu';
+
+  static const String schedules = '$baseUrl/schedules';
+
+  static String scheduleDetail(int id) => '$baseUrl/schedules/$id';
+
+
   // Production nanti ganti:
   // static const String baseUrl = 'https://domainanda.com/api';
 }

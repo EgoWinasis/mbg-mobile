@@ -1,312 +1,835 @@
 import 'package:flutter/material.dart';
 import 'package:mbg_app/screens/main_screen.dart';
+
+import '../models/category_model.dart';
+import '../models/article_model.dart';
+
+import '../services/category_service.dart';
+import '../services/article_service.dart';
+
 import 'artikel_detail_screen.dart';
 
 
-class EdukasiScreen extends StatelessWidget {
-  const EdukasiScreen({super.key});
 
-  static const primaryGreen = Color(0xFF2E8B57);
+class EdukasiScreen extends StatefulWidget {
+
+
+  const EdukasiScreen({
+    super.key,
+  });
+
+
+
+  @override
+  State<EdukasiScreen> createState() =>
+      _EdukasiScreenState();
+
+}
+
+
+
+
+
+class _EdukasiScreenState
+    extends State<EdukasiScreen> {
+
+
+
+  final CategoryService categoryService =
+      CategoryService();
+
+
+
+  final ArticleService articleService =
+      ArticleService();
+
+
+
+
+  late Future<List<CategoryModel>> categories;
+
+  late Future<List<ArticleModel>> articles;
+
+
+
+
+  int? selectedCategoryId;
+
+
+
+  String keyword = "";
+
+
+
+
+  final TextEditingController searchController =
+      TextEditingController();
+
+
+
+
+
+  @override
+  void initState() {
+
+    super.initState();
+
+
+
+    categories =
+        categoryService.getCategories();
+
+
+
+    articles =
+        articleService.getArticles();
+
+
+  }
+
+
+
+
+
+  @override
+  void dispose(){
+
+    searchController.dispose();
+
+    super.dispose();
+
+  }
+
+
+
+
+
+
+  void loadArticles(){
+
+
+    setState((){
+
+
+      articles =
+          articleService.getArticles(
+
+
+            categoryId:
+            selectedCategoryId,
+
+
+
+            keyword:
+            keyword,
+
+
+          );
+
+
+
+    });
+
+
+  }
+
+
+
+
+
+
+  Color hexToColor(String hex){
+
+
+    hex =
+        hex.replaceAll("#", "");
+
+
+
+    if(hex.length == 6){
+
+      hex =
+      "FF$hex";
+
+    }
+
+
+
+    return Color(
+
+      int.parse(
+
+        hex,
+
+        radix:16,
+
+      ),
+
+    );
+
+
+  }
+
+
+
+
+
+  IconData categoryIcon(String icon){
+
+
+    switch(icon.toLowerCase()){
+
+
+      case "mbg":
+
+        return Icons.card_giftcard;
+
+
+
+      case "gizi":
+
+        return Icons.apple;
+
+
+
+      case "kesehatan":
+
+        return Icons.favorite;
+
+
+
+      case "stunting":
+
+        return Icons.child_friendly;
+
+
+
+      default:
+
+        return Icons.category;
+
+
+    }
+
+
+  }
+
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
 
+
+
     return Scaffold(
-      backgroundColor: Colors.white,
 
-      body: SafeArea(
-        child: SingleChildScrollView(
 
-          padding: const EdgeInsets.all(16),
+      backgroundColor:
+      Colors.white,
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
 
-            children: [
+
+      body:
+
+      SafeArea(
+
+
+        child:
+
+        SingleChildScrollView(
+
+
+          padding:
+          const EdgeInsets.all(16),
+
+
+
+          child:
+
+          Column(
+
+
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+
+
+            children:[
+
+
+
+
 
 
               // HEADER
+
+
               Row(
-                children: [
+
+
+                children:[
+
+
 
                   IconButton(
-                   onPressed: () async {
-                      if (Navigator.canPop(context)) {
+
+
+                    onPressed:(){
+
+
+
+                      if(
+                      Navigator.canPop(context)
+                      ){
+
+
                         Navigator.pop(context);
-                      } else {
+
+
+                      }else{
+
+
                         Navigator.pushReplacement(
+
                           context,
+
                           MaterialPageRoute(
-                            builder: (context) => const MainScreen(),
+
+                            builder:(_)=>
+                            const MainScreen(),
+
                           ),
+
                         );
+
+
                       }
+
+
+
                     },
-                    icon: const Icon(
+
+
+
+                    icon:
+                    const Icon(
+
                       Icons.arrow_back,
-                      color: Colors.blue,
+
+                      color:
+                      Colors.blue,
+
                     ),
+
+
                   ),
+
+
+
+
 
 
                   const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Edukasi',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+
+
+                    child:
+                    Center(
+
+
+                      child:
+                      Text(
+
+                        "Edukasi",
+
+
+                        style:
+                        TextStyle(
+
+
+                          fontSize:
+                          18,
+
+
+                          fontWeight:
+                          FontWeight.bold,
+
+
                         ),
+
+
                       ),
+
+
                     ),
+
+
                   ),
 
-                  const SizedBox(width: 48),
+
+
+
+
+                  const SizedBox(
+                    width:48,
+                  ),
+
+
 
                 ],
+
+
               ),
 
 
 
-              const SizedBox(height: 12),
+
+
+              const SizedBox(
+                height:12,
+              ),
+
+
+
+
 
 
 
               // SEARCH
-              Container(
-                height: 45,
 
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+
+              Container(
+
+
+                height:
+                45,
+
+
+
+                decoration:
+                BoxDecoration(
+
+
+                  color:
+                  Colors.grey.shade100,
+
+
+
                   borderRadius:
-                      BorderRadius.circular(25),
+                  BorderRadius.circular(25),
+
+
                 ),
 
-                child: const TextField(
-                  decoration: InputDecoration(
+
+
+
+
+                child:
+
+                TextField(
+
+
+                  controller:
+                  searchController,
+
+
+
+                  onChanged:(value){
+
+
+                    keyword =
+                        value;
+
+
+                    loadArticles();
+
+
+                  },
+
+
+
+
+                  decoration:
+                  const InputDecoration(
+
+
 
                     hintText:
-                        'Cari artikel, topik, atau kata kunci...',
 
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                    ),
+                    "Cari artikel, topik, atau kata kunci...",
 
-                    prefixIcon: Icon(
+
+
+                    prefixIcon:
+
+                    Icon(
+
                       Icons.search,
-                      color: Colors.grey,
+
+                      color:
+                      Colors.grey,
+
                     ),
 
-                    border: InputBorder.none,
 
-                    contentPadding:
-                        EdgeInsets.only(top: 12),
+
+
+                    border:
+
+                    InputBorder.none,
+
 
                   ),
+
+
                 ),
+
+
+
               ),
 
 
 
-              const SizedBox(height: 20),
+
+
+
+              const SizedBox(
+                height:20,
+              ),
+
+
+
+
 
 
 
               // CATEGORY
+
+
               SizedBox(
-                height: 90,
 
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
 
-                  children: const [
+                height:
+                90,
 
-                    CategoryItem(
-                      icon: Icons.grid_view,
-                      title: 'Semua',
-                      color: Colors.green,
-                    ),
 
-                    CategoryItem(
-                      icon: Icons.child_friendly,
-                      title: 'Stunting',
-                      color: Colors.pink,
-                    ),
 
-                    CategoryItem(
-                      icon: Icons.apple,
-                      title: 'Gizi',
-                      color: Colors.orange,
-                    ),
+                child:
 
-                    CategoryItem(
-                      icon: Icons.card_giftcard,
-                      title: 'MBG',
-                      color: Colors.blue,
-                    ),
+                FutureBuilder<List<CategoryModel>>(
 
-                    CategoryItem(
-                      icon: Icons.more_horiz,
-                      title: 'Lainnya',
-                      color: Colors.purple,
-                    ),
 
-                  ],
+
+                  future:
+                  categories,
+
+
+
+
+                  builder:(context,snapshot){
+
+
+
+                    if(snapshot.connectionState ==
+                        ConnectionState.waiting){
+
+
+                      return const Center(
+
+                        child:
+                        CircularProgressIndicator(),
+
+                      );
+
+
+                    }
+
+
+
+
+                    final data =
+                        snapshot.data ?? [];
+
+
+
+
+
+                    return ListView.builder(
+
+
+
+                      scrollDirection:
+                      Axis.horizontal,
+
+
+
+                      itemCount:
+                      data.length + 1,
+
+
+
+                      itemBuilder:(context,index){
+
+
+
+                        if(index == 0){
+
+
+
+                          return GestureDetector(
+
+
+                            onTap:(){
+
+
+                              selectedCategoryId =
+                              null;
+
+
+                              loadArticles();
+
+
+                            },
+
+
+
+                            child:
+
+                            const CategoryItem(
+
+
+                              icon:
+                              Icons.grid_view,
+
+
+                              title:
+                              "Semua",
+
+
+                              color:
+                              Colors.green,
+
+
+                            ),
+
+
+
+                          );
+
+
+                        }
+
+
+
+
+
+
+                        final category =
+                            data[index-1];
+
+
+
+
+                        return GestureDetector(
+
+
+                          onTap:(){
+
+
+
+                            selectedCategoryId =
+                                category.id;
+
+
+
+                            loadArticles();
+
+
+                          },
+
+
+
+                          child:
+
+                          CategoryItem(
+
+
+                            icon:
+                            categoryIcon(
+                              category.icon,
+                            ),
+
+
+
+                            title:
+                            category.name,
+
+
+
+                            color:
+                            hexToColor(
+                              category.color,
+                            ),
+
+
+
+                          ),
+
+
+
+                        );
+
+
+
+                      },
+
+
+
+                    );
+
+
+
+                  },
+
+
                 ),
+
+
               ),
 
 
 
-              const SizedBox(height: 10),
+
+              const SizedBox(
+                height:15,
+              ),
+
 
 
 
               const Text(
-                'Artikel Terbaru',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+
+
+                "Artikel Terbaru",
+
+
+
+                style:
+
+                TextStyle(
+
+
+                  fontSize:
+                  16,
+
+
+                  fontWeight:
+                  FontWeight.bold,
+
+
                 ),
+
+
+
               ),
 
 
 
-              const SizedBox(height: 12),
 
+              const SizedBox(
+                height:12,
+              ),
+                            // ARTICLE LIST
+              FutureBuilder<List<ArticleModel>>(
+                future: articles,
 
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-              ArticleCard(
-  image: 'assets/images/balita.png',
-  title: 'Apa Itu Stunting dan Bagaimana Mencegahnya?',
-  tag: 'Stunting',
-  time: '5 min baca',
-  color: Colors.purple,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ArtikelDetailScreen(),
-      ),
-    );
-  },
-),
+                  if (snapshot.hasError) {
+                    return Center(child: Text(snapshot.error.toString()));
+                  }
 
-ArticleCard(
-  image: 'assets/images/balita.png',
-  title: 'Gizi Penting untuk Ibu Hamil Trimester 2',
-  tag: 'Gizi Ibu Hamil',
-  time: '6 min baca',
-  color: Colors.blue,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ArtikelDetailScreen(),
-      ),
-    );
-  },
-),
+                  final data = snapshot.data ?? [];
 
-ArticleCard(
-  image: 'assets/images/balita.png',
-  title: 'Mengenal Program Makan Bergizi Gratis (MBG)',
-  tag: 'MBG',
-  time: '4 min baca',
-  color: Colors.green,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ArtikelDetailScreen(),
-      ),
-    );
-  },
-),
+                  if (data.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(30),
 
-ArticleCard(
-  image: 'assets/images/balita.png',
-  title: 'MPASI Sehat untuk Tumbuh Kembang Optimal',
-  tag: 'Gizi Balita',
-  time: '5 min baca',
-  color: Colors.pink,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ArtikelDetailScreen(),
-      ),
-    );
-  },
-),
+                        child: Text("Artikel tidak ditemukan"),
+                      ),
+                    );
+                  }
 
+                  return Column(
+                    children: data.map((article) {
+                      return ArticleCard(
+                        image: article.thumbnail,
 
+                        title: article.title,
 
-              const SizedBox(height: 15),
+                        summary: article.summary,
 
+                        tag: article.categoryName,
 
+                        time: "${article.readingTime} min baca",
 
-              // BUTTON
+                        color: hexToColor(article.categoryColor),
+
+                        onTap: () {
+                          Navigator.push(
+                            context,
+
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ArtikelDetailScreen(slug: article.slug),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 20),
+
               SizedBox(
-  width: double.infinity,
-  height: 45,
+                width: double.infinity,
 
-  child: OutlinedButton(
-    onPressed: () {},
+                height: 45,
 
-    style: ButtonStyle(
-      side: WidgetStateProperty.resolveWith<BorderSide>(
-        (states) {
-          return const BorderSide(
-            color: Colors.blue,
-          );
-        },
-      ),
+                child: OutlinedButton(
+                  onPressed: () {
+                    // jika nanti pagination
+                  },
 
-      shape: WidgetStateProperty.all(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25),
-        ),
-      ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.blue),
 
-      backgroundColor:
-          WidgetStateProperty.resolveWith<Color?>(
-        (states) {
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
 
-          if (states.contains(WidgetState.pressed)) {
-            return Colors.blue;
-          }
+                  child: const Text(
+                    "Lihat Semua Artikel",
 
-          if (states.contains(WidgetState.hovered)) {
-            return Colors.blue.withValues(alpha: 0.1);
-          }
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
 
-          return Colors.transparent;
-        },
-      ),
-
-      foregroundColor:
-          WidgetStateProperty.resolveWith<Color?>(
-        (states) {
-
-          if (states.contains(WidgetState.pressed)) {
-            return Colors.white;
-          }
-
-          return Colors.blue;
-        },
-      ),
-    ),
-
-    child: const Text(
-      'Lihat Semua Artikel',
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-),
-
-
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -315,135 +838,149 @@ ArticleCard(
   }
 }
 
-
-
-
-// =============================
+// ==========================
 // CATEGORY ITEM
-// =============================
+// ==========================
 
 class CategoryItem extends StatelessWidget {
-
   final IconData icon;
-  final String title;
-  final Color color;
 
+  final String title;
+
+  final Color color;
 
   const CategoryItem({
     super.key,
+
     required this.icon,
+
     required this.title,
+
     required this.color,
   });
 
-
   @override
   Widget build(BuildContext context) {
-
     return Container(
+      width: 75,
 
-      width: 70,
-
-      margin:
-          const EdgeInsets.only(right: 12),
+      margin: const EdgeInsets.only(right: 12),
 
       child: Column(
-
         children: [
-
           Container(
-
             width: 50,
+
             height: 50,
 
             decoration: BoxDecoration(
+              color: color.withValues(alpha: .15),
 
-              color:
-                  color.withValues(alpha:0.15),
-
-              shape:
-                  BoxShape.circle,
-
+              shape: BoxShape.circle,
             ),
 
-            child: Icon(
-              icon,
-              color: color,
-            ),
-
+            child: Icon(icon, color: color),
           ),
-
 
           const SizedBox(height: 6),
 
-
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 12,
-            ),
-          ),
 
+            maxLines: 1,
+
+            overflow: TextOverflow.ellipsis,
+
+            style: const TextStyle(fontSize: 12),
+          ),
         ],
       ),
     );
   }
 }
 
-
-
-
-// =============================
+// ==========================
 // ARTICLE CARD
-// =============================
+// ==========================
 
 class ArticleCard extends StatelessWidget {
   final String image;
+
   final String title;
+
+  final String summary;
+
   final String tag;
+
   final String time;
+
   final Color color;
-  final VoidCallback? onTap;
+
+  final VoidCallback onTap;
 
   const ArticleCard({
     super.key,
+
     required this.image,
+
     required this.title,
+
+    required this.summary,
+
     required this.tag,
+
     required this.time,
+
     required this.color,
-    this.onTap,
+
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+
       borderRadius: BorderRadius.circular(15),
 
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
+
         padding: const EdgeInsets.all(8),
 
         decoration: BoxDecoration(
           color: Colors.white,
+
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: Colors.grey.withValues(alpha: 0.15),
-          ),
+
+          border: Border.all(color: Colors.grey.withValues(alpha: .15)),
         ),
 
         child: Row(
           children: [
-
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
 
-              child: Image.asset(
+              child: Image.network(
                 image,
+
                 width: 100,
-                height: 85,
+
+                height: 95,
+
                 fit: BoxFit.cover,
+
+                errorBuilder: (context, error, stack) {
+                  return Container(
+                    width: 100,
+
+                    height: 95,
+
+                    color: Colors.grey.shade200,
+
+                    child: const Icon(Icons.image),
+                  );
+                },
               ),
             ),
 
@@ -454,47 +991,55 @@ class ArticleCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   Text(
                     title,
+
                     maxLines: 2,
+
                     overflow: TextOverflow.ellipsis,
 
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
                       fontSize: 14,
+
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 5),
+
+                  Text(
+                    summary,
+
+                    maxLines: 2,
+
+                    overflow: TextOverflow.ellipsis,
+
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+
+                  const SizedBox(height: 10),
 
                   Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                     children: [
-
                       Container(
-                        padding:
-                            const EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 8,
+
                           vertical: 4,
                         ),
 
                         decoration: BoxDecoration(
-                          color:
-                              color.withValues(alpha: 0.12),
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          color: color.withValues(alpha: .12),
+
+                          borderRadius: BorderRadius.circular(20),
                         ),
 
                         child: Text(
                           tag,
 
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: color,
-                          ),
+                          style: TextStyle(fontSize: 10, color: color),
                         ),
                       ),
 
@@ -503,6 +1048,7 @@ class ArticleCard extends StatelessWidget {
 
                         style: const TextStyle(
                           fontSize: 11,
+
                           color: Colors.grey,
                         ),
                       ),
