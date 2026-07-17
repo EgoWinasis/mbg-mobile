@@ -6,34 +6,71 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 
+import '../models/distribution_model.dart';
+
+import '../services/distribution_service.dart';
+import '../services/confirmation_service.dart';
+
 
 class RiwayatMBGScreen extends StatefulWidget {
+
   const RiwayatMBGScreen({
     super.key,
   });
 
+
   @override
   State<RiwayatMBGScreen> createState() =>
       _RiwayatMBGScreenState();
+
 }
+
 
 
 class _RiwayatMBGScreenState
     extends State<RiwayatMBGScreen> {
 
 
+  final ConfirmationService _confirmationService =
+      ConfirmationService();
+
+
+  final DistributionService _distributionService =
+      DistributionService();
+
+
+
+  DistributionModel? distribution;
+
+
+  bool loading = true;
+
+
+  bool _isSubmitting = false;
+
+
+
   double _rating = 0;
+
 
 
   final TextEditingController _kritikController =
       TextEditingController();
 
 
-  final String tanggalPenerimaan =
-      "22 Juni 2026";
-
 
   File? _photo;
+
+
+
+  @override
+  void initState() {
+
+    super.initState();
+
+    _loadDistribution();
+
+  }
 
 
 
@@ -50,11 +87,78 @@ class _RiwayatMBGScreenState
 
 
 
+
+  Future<void> _loadDistribution() async {
+
+    try {
+
+
+      final result =
+          await _distributionService.getToday();
+
+
+      if (!mounted) return;
+
+
+      setState(() {
+
+        distribution = result;
+
+        loading = false;
+
+      });
+
+
+    } catch(e) {
+
+
+      if (!mounted) return;
+
+
+      setState(() {
+
+        loading = false;
+
+      });
+
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+
+      );
+
+
+    }
+
+  }
+
+
+
+
+
+  String get tanggalPenerimaan {
+
+    return DateTime.now()
+        .toString()
+        .substring(0,10);
+
+  }
+
+
+
+
+
   Widget _buildStar(int index) {
+
 
     return IconButton(
 
       onPressed: () {
+
 
         setState(() {
 
@@ -63,6 +167,7 @@ class _RiwayatMBGScreenState
 
         });
 
+
       },
 
 
@@ -70,17 +175,21 @@ class _RiwayatMBGScreenState
 
         Icons.star,
 
-        size: 32,
+        size:32,
 
 
         color:
-            _rating >= index
-                ? Colors.orange
-                : Colors.grey,
+
+        _rating >= index
+
+            ? Colors.orange
+
+            : Colors.grey,
 
       ),
 
     );
+
 
   }
 
@@ -88,56 +197,49 @@ class _RiwayatMBGScreenState
 
 
 
-
-
   Future<void> _pickImage() async {
+
 
     try {
 
 
-      final ImagePicker picker =
+      final picker =
           ImagePicker();
 
 
 
-      final XFile? image =
+      final image =
           await picker.pickImage(
 
-        source:
-            ImageSource.camera,
+        source: ImageSource.camera,
 
-        imageQuality:
-            95,
+        imageQuality:95,
 
       );
 
 
 
-      if (image == null) return;
+      if(image == null) return;
 
 
 
 
 
-      bool gpsAktif =
+      bool gps =
           await Geolocator
               .isLocationServiceEnabled();
 
 
 
-      if (!gpsAktif) {
+      if(!gps){
 
 
         ScaffoldMessenger.of(context)
             .showSnackBar(
 
           const SnackBar(
-
             content:
-                Text(
-              "Aktifkan GPS terlebih dahulu",
-            ),
-
+            Text("Aktifkan GPS terlebih dahulu"),
           ),
 
         );
@@ -151,20 +253,17 @@ class _RiwayatMBGScreenState
 
 
 
-      LocationPermission izin =
-          await Geolocator
-              .checkPermission();
+      LocationPermission permission =
+          await Geolocator.checkPermission();
 
 
 
+      if(permission ==
+          LocationPermission.denied){
 
-      if (izin ==
-          LocationPermission.denied) {
 
-
-        izin =
-            await Geolocator
-                .requestPermission();
+        permission =
+            await Geolocator.requestPermission();
 
 
       }
@@ -173,67 +272,25 @@ class _RiwayatMBGScreenState
 
 
 
-      if (izin ==
-              LocationPermission.denied ||
-          izin ==
-              LocationPermission.deniedForever) {
-
-
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-
-          const SnackBar(
-
-            content:
-                Text(
-              "Izin lokasi ditolak",
-            ),
-
-          ),
-
-        );
+      if(permission ==
+          LocationPermission.deniedForever){
 
 
         return;
 
       }
-
 
 
 
 
 
       Position posisi =
-          await Geolocator
-              .getCurrentPosition(
+          await Geolocator.getCurrentPosition(
 
         desiredAccuracy:
-            LocationAccuracy.high,
+        LocationAccuracy.high,
 
       );
-
-
-
-
-
-      String waktu =
-          DateTime.now()
-              .toString()
-              .substring(
-                0,
-                19,
-              );
-
-
-
-
-
-      String lokasi =
-
-          "Latitude : ${posisi.latitude}\n"
-          "Longitude : ${posisi.longitude}";
-
-
 
 
 
@@ -245,15 +302,12 @@ class _RiwayatMBGScreenState
 
 
 
-
       img.Image? foto =
           img.decodeImage(bytes);
 
 
 
-
-      if (foto == null) return;
-
+      if(foto == null) return;
 
 
 
@@ -264,62 +318,75 @@ class _RiwayatMBGScreenState
 
 
 
+      String waktu =
+          DateTime.now()
+              .toString()
+              .substring(0,19);
 
 
-      // background watermark
+
+
 
       img.fillRect(
 
         foto,
 
-
-        x1:
-            0,
-
+        x1:0,
 
         y1:
-            foto.height - 300,
-
+        foto.height - 300,
 
         x2:
-            foto.width,
-
+        foto.width,
 
         y2:
-            foto.height,
+        foto.height,
 
 
         color:
-            img.ColorRgba8(
-              0,
-              0,
-              0,
-              170,
-            ),
+        img.ColorRgba8(
+          0,
+          0,
+          0,
+          170,
+        ),
 
       );
-
-
 
 
 
 
 
       img.drawString(
+
         foto,
 
-        "SPPM MBG\n$waktu\n$lokasi",
 
-        font: img.arial48,
+        "SPPM MBG\n"
+            "$waktu\n"
+            "Lat:${posisi.latitude}\n"
+            "Lng:${posisi.longitude}",
 
-        x: 40,
 
-        y: foto.height - 240,
+        font:
+        img.arial48,
 
-        color: img.ColorRgb8(255, 255, 0),
+
+        x:40,
+
+
+        y:
+        foto.height - 230,
+
+
+        color:
+        img.ColorRgb8(
+          255,
+          255,
+          0,
+        ),
+
       );
-
-
 
 
 
@@ -327,7 +394,6 @@ class _RiwayatMBGScreenState
 
       final directory =
           await getTemporaryDirectory();
-
 
 
 
@@ -340,17 +406,11 @@ class _RiwayatMBGScreenState
 
 
 
-
-
       await file.writeAsBytes(
 
         img.encodeJpg(
-
           foto,
-
-          quality:
-              95,
-
+          quality:95,
         ),
 
       );
@@ -358,32 +418,26 @@ class _RiwayatMBGScreenState
 
 
 
+      if(!mounted) return;
 
 
       setState(() {
 
-        _photo =
-            file;
+        _photo=file;
 
       });
 
 
 
-
-
-    } catch(e) {
+    }catch(e){
 
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         SnackBar(
-
           content:
-              Text(
-                "Error: $e",
-              ),
-
+          Text(e.toString()),
         ),
 
       );
@@ -400,363 +454,1224 @@ class _RiwayatMBGScreenState
 
   void _deletePhoto(){
 
+
     setState(() {
 
-      _photo =
-          null;
+      _photo=null;
 
     });
 
+
   }
 
-    void _submit() {
-    if (_rating == 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Silakan beri rating")));
+
+
+
+
+  Future<void> _submit() async {
+
+
+    if(_rating==0){
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+          Text("Silakan beri rating"),
+        ),
+
+      );
+
 
       return;
+
     }
 
-    if (_photo == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Silakan ambil foto bukti")));
+
+
+
+    if(_photo==null){
+
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+          Text("Silakan ambil foto bukti"),
+        ),
+
+      );
+
 
       return;
+
     }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Berhasil disimpan")));
+
+
+
+    if(distribution==null){
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+          Text("Distribusi belum tersedia"),
+        ),
+
+      );
+
+
+      return;
+
+    }
+
+
+
+
+    try{
+
+
+      setState(() {
+
+        _isSubmitting=true;
+
+      });
+
+
+
+
+      await _confirmationService.sendConfirmation(
+
+        distributionId:
+        distribution!.id,
+
+
+        rating:
+        _rating.toInt(),
+
+
+        kritik:
+        _kritikController.text,
+
+
+        photo:
+        _photo!,
+
+
+        latitude:0,
+
+
+        longitude:0,
+
+      );
+
+
+
+
+      if(!mounted)return;
+
+
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+          content:
+          Text("Verifikasi berhasil dikirim"),
+        ),
+
+      );
+
+
+
+      Navigator.pop(context);
+
+
+
+    }catch(e){
+
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        SnackBar(
+          content:
+          Text(e.toString()),
+        ),
+
+      );
+
+
+    }finally{
+
+
+      if(mounted){
+
+        setState(() {
+
+          _isSubmitting=false;
+
+        });
+
+      }
+
+
+    }
+
+
   }
 
-  @override
+
+    @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
 
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+
+    if (loading) {
+
+      return const Scaffold(
+
+        body: Center(
+
+          child:
+          CircularProgressIndicator(),
+
+        ),
+
+      );
+
+    }
+
+
+
+    return Scaffold(
+
+      backgroundColor:
+      Colors.white,
+
+
+
+      body:
+
+      SafeArea(
+
+        child:
+
+        ListView(
+
+          padding:
+          const EdgeInsets.all(16),
+
+
 
           children: [
+
+
             Row(
+
               children: [
+
+
                 IconButton(
+
                   onPressed: () {
+
                     Navigator.pop(context);
+
                   },
 
-                  icon: const Icon(
+
+                  icon:
+
+                  const Icon(
+
                     Icons.arrow_back,
 
                     color: Colors.blue,
 
-                    size: 30,
+                    size:30,
+
                   ),
+
                 ),
+
+
+
 
                 const Expanded(
-                  child: Text(
-                    "Penilaian MBG",
 
-                    textAlign: TextAlign.center,
-
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                const SizedBox(width: 48),
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-
-                borderRadius: BorderRadius.circular(12),
-
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_month, color: Colors.blue),
-
-                  const SizedBox(width: 10),
+                  child:
 
                   Text(
-                    "Tanggal Penerimaan: $tanggalPenerimaan",
 
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    "Penilaian MBG",
+
+
+                    textAlign:
+                    TextAlign.center,
+
+
+                    style:
+
+                    TextStyle(
+
+                      fontSize:18,
+
+                      fontWeight:
+                      FontWeight.bold,
+
+                    ),
+
                   ),
-                ],
-              ),
+
+                ),
+
+
+
+                const SizedBox(
+                  width:48,
+                ),
+
+
+              ],
+
             ),
 
-            const SizedBox(height: 20),
+
+
+
+
+            const SizedBox(
+              height:25,
+            ),
+
+
+
+
+
 
             Container(
-              padding: const EdgeInsets.all(14),
 
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+              padding:
+              const EdgeInsets.all(14),
 
-                border: Border.all(color: Colors.blue.shade200),
+
+              decoration:
+
+              BoxDecoration(
+
+                color:
+                Colors.blue.shade50,
+
+
+                borderRadius:
+                BorderRadius.circular(12),
+
+
+                border:
+
+                Border.all(
+                  color:
+                  Colors.blue.shade200,
+                ),
+
               ),
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+
+              child:
+
+              Row(
 
                 children: [
+
+
+                  const Icon(
+                    Icons.calendar_month,
+                    color: Colors.blue,
+                  ),
+
+
+                  const SizedBox(
+                    width:10,
+                  ),
+
+
+
+                  Text(
+
+                    "Tanggal Penerimaan: "
+                        "$tanggalPenerimaan",
+
+
+
+                    style:
+
+                    const TextStyle(
+
+                      fontWeight:
+                      FontWeight.bold,
+
+                    ),
+
+                  ),
+
+
+                ],
+
+              ),
+
+            ),
+
+
+
+
+
+
+            const SizedBox(
+              height:20,
+            ),
+
+
+
+
+
+            Container(
+
+              padding:
+              const EdgeInsets.all(14),
+
+
+              decoration:
+
+              BoxDecoration(
+
+                borderRadius:
+                BorderRadius.circular(12),
+
+
+                border:
+
+                Border.all(
+                  color:
+                  Colors.blue.shade200,
+                ),
+
+              ),
+
+
+
+              child:
+
+              Column(
+
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+
+
+                children: [
+
+
                   const Text(
+
                     "Rating Penerimaan",
 
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
+                    style:
+
+                    TextStyle(
+
+                      fontSize:16,
+
+                      fontWeight:
+                      FontWeight.bold,
+
+                    ),
+
                   ),
+
+
+
 
                   Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
 
-                      children: List.generate(
+                    child:
+
+                    Row(
+
+                      mainAxisAlignment:
+                      MainAxisAlignment.center,
+
+
+                      children:
+
+                      List.generate(
+
                         5,
 
-                        (index) => _buildStar(index + 1),
+                            (index)=>
+
+                            _buildStar(index+1),
+
                       ),
+
                     ),
+
                   ),
+
+
                 ],
+
               ),
+
             ),
 
-            const SizedBox(height: 20),
+
+
+
+
+
+            const SizedBox(
+              height:20,
+            ),
+
+
+
+
+
 
             Container(
-              padding: const EdgeInsets.all(14),
 
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+              padding:
+              const EdgeInsets.all(14),
 
-                border: Border.all(color: Colors.blue.shade200),
+
+              decoration:
+
+              BoxDecoration(
+
+                borderRadius:
+                BorderRadius.circular(12),
+
+
+                border:
+
+                Border.all(
+                  color:
+                  Colors.blue.shade200,
+                ),
+
               ),
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+
+              child:
+
+              Column(
+
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+
 
                 children: [
+
+
                   const Text(
+
                     "Kritik & Saran",
 
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
+                    style:
+
+                    TextStyle(
+
+                      fontSize:16,
+
+                      fontWeight:
+                      FontWeight.bold,
+
+                    ),
+
                   ),
 
-                  const SizedBox(height: 10),
+
+
+                  const SizedBox(
+                    height:10,
+                  ),
+
+
 
                   TextField(
-                    controller: _kritikController,
 
-                    maxLines: 4,
+                    controller:
+                    _kritikController,
 
-                    decoration: InputDecoration(
-                      hintText: "Tulis kritik dan saran...",
 
-                      filled: true,
+                    maxLines:4,
 
-                      fillColor: Colors.grey.shade100,
 
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
 
-                        borderSide: BorderSide.none,
+                    decoration:
+
+                    InputDecoration(
+
+                      hintText:
+                      "Tulis kritik dan saran...",
+
+
+                      filled:true,
+
+
+                      fillColor:
+                      Colors.grey.shade100,
+
+
+
+                      border:
+
+                      OutlineInputBorder(
+
+                        borderRadius:
+                        BorderRadius.circular(12),
+
+
+                        borderSide:
+                        BorderSide.none,
+
                       ),
+
                     ),
+
                   ),
+
+
                 ],
+
               ),
+
             ),
 
-            const SizedBox(height: 20),
+
+
+
+
+
+            const SizedBox(
+              height:20,
+            ),
+
+
+
+
 
             Container(
-              padding: const EdgeInsets.all(14),
 
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+              padding:
+              const EdgeInsets.all(14),
 
-                border: Border.all(color: Colors.blue.shade200),
+
+              decoration:
+
+              BoxDecoration(
+
+                borderRadius:
+                BorderRadius.circular(12),
+
+
+                border:
+
+                Border.all(
+                  color:
+                  Colors.blue.shade200,
+                ),
+
               ),
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+
+
+              child:
+
+              Column(
+
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+
 
                 children: [
+
+
                   const Text(
+
                     "Bukti Foto",
 
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
+                    style:
+
+                    TextStyle(
+
+                      fontSize:16,
+
+                      fontWeight:
+                      FontWeight.bold,
+
+                    ),
+
                   ),
 
-                  const SizedBox(height: 10),
+
+
+                  const SizedBox(
+                    height:10,
+                  ),
+
+
+
+
 
                   GestureDetector(
-                    onTap: _pickImage,
 
-                    child: Container(
-                      height: 300,
+                    onTap:
+                    _pickImage,
 
-                      width: double.infinity,
 
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
 
-                        borderRadius: BorderRadius.circular(16),
+                    child:
+
+                    Container(
+
+                      height:300,
+
+                      width:
+                      double.infinity,
+
+
+
+                      decoration:
+
+                      BoxDecoration(
+
+                        color:
+                        Colors.grey.shade100,
+
+
+                        borderRadius:
+                        BorderRadius.circular(16),
+
                       ),
 
-                      child: _photo == null
-                          ? const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
 
-                              children: [
-                                Icon(
-                                  Icons.camera_alt,
 
-                                  size: 60,
 
-                                  color: Colors.blue,
-                                ),
+                      child:
 
-                                SizedBox(height: 12),
+                      _photo == null
 
-                                Text("Ambil foto bukti"),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
+                          ?
 
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              FullImagePreview(image: _photo!),
-                                        ),
-                                      );
-                                    },
+                      const Column(
 
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
+                        mainAxisAlignment:
+                        MainAxisAlignment.center,
 
-                                      child: Image.file(
-                                        _photo!,
 
-                                        width: double.infinity,
+                        children: [
 
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
+
+                          Icon(
+
+                            Icons.camera_alt,
+
+                            size:60,
+
+                            color:Colors.blue,
+
+                          ),
+
+
+
+                          SizedBox(
+                            height:12,
+                          ),
+
+
+
+                          Text(
+                            "Ambil foto bukti",
+                          ),
+
+                        ],
+
+                      )
+
+
+
+                          :
+
+                      GestureDetector(
+
+                        onTap: () {
+
+
+                          Navigator.push(
+
+                            context,
+
+
+                            MaterialPageRoute(
+
+                              builder:(_)=>
+
+                                  FullImagePreview(
+
+                                    image:
+                                    _photo!,
+
                                   ),
-                                ),
 
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-
-                                  children: [
-                                    ElevatedButton.icon(
-                                      onPressed: _pickImage,
-
-                                      icon: const Icon(Icons.camera_alt),
-
-                                      label: const Text("Retake"),
-                                    ),
-
-                                    const SizedBox(width: 10),
-
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                      ),
-
-                                      onPressed: _deletePhoto,
-
-                                      icon: const Icon(Icons.delete),
-
-                                      label: const Text("Hapus"),
-                                    ),
-                                  ],
-                                ),
-                              ],
                             ),
+
+                          );
+
+
+                        },
+
+
+
+                        child:
+
+                        ClipRRect(
+
+                          borderRadius:
+                          BorderRadius.circular(16),
+
+
+
+                          child:
+
+                          Image.file(
+
+                            _photo!,
+
+
+                            fit:
+                            BoxFit.cover,
+
+
+                            width:
+                            double.infinity,
+
+
+
+                            frameBuilder:
+
+                                (
+                                context,
+                                child,
+                                frame,
+                                sync,
+                                )
+
+                            {
+
+
+                              if(frame != null ||
+                                  sync){
+
+                                return child;
+
+                              }
+
+
+
+                              return const Center(
+
+                                child:
+
+                                CircularProgressIndicator(),
+
+                              );
+
+
+                            },
+
+                          ),
+
+
+                        ),
+
+                      ),
+
+
                     ),
+
+
                   ),
+
+
+
+
+
+
+                  if(_photo != null)
+
+                    Row(
+
+                      mainAxisAlignment:
+                      MainAxisAlignment.center,
+
+
+                      children: [
+
+
+                        ElevatedButton.icon(
+
+                          onPressed:
+                          _pickImage,
+
+
+                          icon:
+
+                          const Icon(
+                            Icons.camera_alt,
+                          ),
+
+
+
+                          label:
+
+                          const Text(
+                            "Retake",
+                          ),
+
+                        ),
+
+
+
+
+
+                        const SizedBox(
+                          width:10,
+                        ),
+
+
+
+
+
+                        ElevatedButton.icon(
+
+                          style:
+
+                          ElevatedButton.styleFrom(
+
+                            backgroundColor:
+                            Colors.red,
+
+                          ),
+
+
+
+                          onPressed:
+                          _deletePhoto,
+
+
+                          icon:
+
+                          const Icon(
+                            Icons.delete,
+                          ),
+
+
+
+                          label:
+
+                          const Text(
+                            "Hapus",
+                          ),
+
+
+                        ),
+
+
+                      ],
+
+                    ),
+
+
+
                 ],
+
               ),
+
             ),
 
-            const SizedBox(height: 25),
+
+
+
+
+
+            const SizedBox(
+              height:25,
+            ),
+
+
+
+
+
 
             SizedBox(
-              height: 50,
 
-              child: ElevatedButton(
-                onPressed: _submit,
+              height:50,
 
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
 
-                  foregroundColor: Colors.white,
+              child:
 
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              ElevatedButton(
+
+                onPressed:
+
+                _isSubmitting
+
+                    ? null
+
+                    : _submit,
+
+
+
+                style:
+
+                ElevatedButton.styleFrom(
+
+                  backgroundColor:
+                  Colors.blue,
+
+
+                  disabledBackgroundColor:
+                  Colors.blue.shade300,
+
+
+                  foregroundColor:
+                  Colors.white,
+
+
+                  shape:
+
+                  RoundedRectangleBorder(
+
+                    borderRadius:
+                    BorderRadius.circular(12),
+
                   ),
+
                 ),
 
-                child: const Text(
+
+
+
+                child:
+
+                _isSubmitting
+
+
+                    ?
+
+                const SizedBox(
+
+                  width:25,
+
+                  height:25,
+
+
+                  child:
+
+                  CircularProgressIndicator(
+
+                    color:
+                    Colors.white,
+
+
+                    strokeWidth:3,
+
+                  ),
+
+                )
+
+
+
+                    :
+
+                const Text(
+
                   "Simpan",
 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+
+                  style:
+
+                  TextStyle(
+
+                    fontSize:16,
+
+                    fontWeight:
+                    FontWeight.bold,
+
+                  ),
+
                 ),
+
+
               ),
+
             ),
+
+
+
           ],
+
         ),
+
       ),
+
     );
+
+
   }
+
 }
 
+
+
+
+
 class FullImagePreview extends StatelessWidget {
+
+
   final File image;
 
-  const FullImagePreview({super.key, required this.image});
+
+
+  const FullImagePreview({
+
+    super.key,
+
+    required this.image,
+
+  });
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
-      backgroundColor: Colors.black,
 
-      appBar: AppBar(
-        backgroundColor: Colors.black,
+      backgroundColor:
+      Colors.black,
 
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
 
-      body: Center(
-        child: InteractiveViewer(
-          minScale: 0.5,
 
-          maxScale: 5,
+      appBar:
 
-          child: Image.file(image, fit: BoxFit.contain),
+      AppBar(
+
+        backgroundColor:
+        Colors.black,
+
+
+        iconTheme:
+
+        const IconThemeData(
+
+          color:
+          Colors.white,
+
         ),
+
       ),
+
+
+
+
+      body:
+
+      Center(
+
+        child:
+
+        InteractiveViewer(
+
+          minScale:0.5,
+
+          maxScale:5,
+
+
+
+          child:
+
+          Image.file(
+
+            image,
+
+
+            fit:
+            BoxFit.contain,
+
+
+
+            frameBuilder:
+
+                (
+                context,
+                child,
+                frame,
+                sync,
+                )
+
+            {
+
+
+              if(frame != null ||
+                  sync){
+
+                return child;
+
+              }
+
+
+
+              return const Center(
+
+                child:
+
+                CircularProgressIndicator(
+
+                  color:
+                  Colors.white,
+
+                ),
+
+              );
+
+
+            },
+
+          ),
+
+
+        ),
+
+      ),
+
+
     );
+
+
   }
+
+
 }

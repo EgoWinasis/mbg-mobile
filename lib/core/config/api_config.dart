@@ -3,18 +3,12 @@ class ApiConfig {
   static const String baseUrl = 'http://192.168.52.52:8000/api';
 
   static String get serverUrl {
-
     return baseUrl.replaceFirst('/api', '');
-
   }
-
 
   static String imageUrl(String path) {
-
     return "$serverUrl/storage/$path";
-
   }
-  
 
   // Auth
   static const String login = '$baseUrl/auth/login';
@@ -27,25 +21,17 @@ class ApiConfig {
   static const String logout = '$baseUrl/auth/logout';
 
   // PROFILE
-  static const String updateProfile =
-      '$baseUrl/profile';
+  static const String updateProfile = '$baseUrl/profile';
 
-
-  static const String profilePhoto =
-      '$baseUrl/profile/photo';
-
-
+  static const String profilePhoto = '$baseUrl/profile/photo';
 
   // EDUKASI
-  static const String categories =
-      '$baseUrl/education/categories';
+  static const String categories = '$baseUrl/education/categories';
 
-  static const String articles =
-      '$baseUrl/education/articles';
+  static const String articles = '$baseUrl/education/articles';
 
   static String articleDetail(String slug) =>
       '$baseUrl/education/articles/$slug';
-
 
   static const String mbgMenu = '$baseUrl/mbg/menu';
 
@@ -53,6 +39,16 @@ class ApiConfig {
 
   static String scheduleDetail(int id) => '$baseUrl/schedules/$id';
 
+  // CONFIRMATION / VERIFIKASI MBG
+
+  static const String confirmations = '$baseUrl/confirmation';
+
+  static String confirmationDetail(int id) => '$baseUrl/confirmation/$id';
+
+  static const String latestConfirmation = '$baseUrl/confirmations/latest';
+
+  static const String distributionToday =
+    '$baseUrl/distribution/today';
 
   // Production nanti ganti:
   // static const String baseUrl = 'https://domainanda.com/api';

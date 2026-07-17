@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../core/config/api_config.dart';
+import '../core/storage/secure_storage.dart';
 import '../models/schedule_model.dart';
 
 class ScheduleService {
@@ -11,32 +12,80 @@ class ScheduleService {
 
     String? month,
   }) async {
-    final response = await dio.get(
-      ApiConfig.schedules,
+    try {
+      final token = await SecureStorage.getToken();
 
-      queryParameters: {
-        if (type != null) "type": type,
+      if (token == null) {
+        throw Exception("Silakan login terlebih dahulu");
+      }
 
-        if (month != null) "month": month,
-      },
-    );
+      final response = await dio.get(
+        ApiConfig.schedules,
 
-    if (response.data['success'] == true) {
-      final List data = response.data['data'];
+        queryParameters: {
+          if (type != null) "type": type,
 
-      return data.map((e) => ScheduleModel.fromJson(e)).toList();
+          if (month != null) "month": month,
+        },
+
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+
+            "Accept": "application/json",
+          },
+        ),
+      );
+
+      if (response.data['success'] == true) {
+        final List data = response.data['data'];
+
+        return data.map((e) {
+          return ScheduleModel.fromJson(e);
+        }).toList();
+      }
+
+      throw Exception("Gagal mengambil jadwal");
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception("Sesi login habis, silakan login ulang");
+      }
+
+      throw Exception(e.response?.data['message'] ?? e.message);
     }
-
-    throw Exception("Gagal mengambil jadwal");
   }
 
   Future<ScheduleModel> detail(int id) async {
-    final response = await dio.get(ApiConfig.scheduleDetail(id));
+    try {
+      final token = await SecureStorage.getToken();
 
-    if (response.data['success'] == true) {
-      return ScheduleModel.fromJson(response.data['data']);
+      if (token == null) {
+        throw Exception("Silakan login terlebih dahulu");
+      }
+
+      final response = await dio.get(
+        ApiConfig.scheduleDetail(id),
+
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+
+            "Accept": "application/json",
+          },
+        ),
+      );
+
+      if (response.data['success'] == true) {
+        return ScheduleModel.fromJson(response.data['data']);
+      }
+
+      throw Exception("Detail jadwal tidak ditemukan");
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception("Sesi login habis, silakan login ulang");
+      }
+
+      throw Exception(e.response?.data['message'] ?? e.message);
     }
-
-    throw Exception("Detail jadwal tidak ditemukan");
   }
 }

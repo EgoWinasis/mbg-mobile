@@ -1,22 +1,22 @@
 import 'package:dio/dio.dart';
 
 import '../core/config/api_config.dart';
-import '../models/category_model.dart';
 import '../core/storage/secure_storage.dart';
+import '../models/distribution_model.dart';
 
-class CategoryService {
+class DistributionService {
   final Dio _dio = Dio();
 
-  Future<List<CategoryModel>> getCategories() async {
+  Future<DistributionModel> getToday() async {
+    final token = await SecureStorage.getToken();
+
+    if (token == null) {
+      throw Exception("Belum login");
+    }
+
     try {
-      final token = await SecureStorage.getToken();
-
-      if (token == null) {
-        throw Exception("Token tidak ditemukan");
-      }
-
       final response = await _dio.get(
-        ApiConfig.categories,
+        ApiConfig.distributionToday,
 
         options: Options(
           headers: {
@@ -27,11 +27,7 @@ class CategoryService {
         ),
       );
 
-      final List data = response.data['data'];
-
-      return data.map((e) {
-        return CategoryModel.fromJson(e);
-      }).toList();
+      return DistributionModel.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? e.message);
     }

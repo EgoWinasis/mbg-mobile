@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../core/config/api_config.dart';
 import '../models/article_model.dart';
+import '../core/storage/secure_storage.dart';
 
 
 
@@ -9,6 +10,45 @@ class ArticleService {
 
 
   final Dio _dio = Dio();
+
+
+
+
+
+  Future<Options> _options() async {
+
+
+    final token =
+        await SecureStorage.getToken();
+
+
+
+    return Options(
+
+      headers: {
+
+
+        "Accept":
+        "application/json",
+
+
+
+        if(token != null)
+
+          "Authorization":
+          "Bearer $token",
+
+
+      },
+
+    );
+
+
+  }
+
+
+
+
 
 
 
@@ -26,11 +66,11 @@ class ArticleService {
     try {
 
 
-      final response = await _dio.get(
+      final response =
+      await _dio.get(
 
 
         ApiConfig.articles,
-
 
 
         queryParameters: {
@@ -53,13 +93,19 @@ class ArticleService {
         },
 
 
+        options:
+        await _options(),
+
+
       );
+
 
 
 
 
       final List data =
           response.data['data'];
+
 
 
 
@@ -76,6 +122,8 @@ class ArticleService {
 
 
 
+
+
     } on DioException catch(e){
 
 
@@ -85,6 +133,7 @@ class ArticleService {
         e.response?.data['message']
 
         ??
+
         e.message,
 
       );
@@ -94,6 +143,9 @@ class ArticleService {
 
 
   }
+
+
+
 
 
 
@@ -114,8 +166,10 @@ class ArticleService {
     try {
 
 
+
       final response =
       await _dio.get(
+
 
 
         ApiConfig.articleDetail(
@@ -123,7 +177,14 @@ class ArticleService {
         ),
 
 
+
+        options:
+        await _options(),
+
+
       );
+
+
 
 
 
@@ -136,6 +197,7 @@ class ArticleService {
 
 
 
+
     } on DioException catch(e){
 
 
@@ -145,6 +207,7 @@ class ArticleService {
         e.response?.data['message']
 
         ??
+
         e.message,
 
       );
