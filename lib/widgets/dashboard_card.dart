@@ -23,10 +23,7 @@ class DashboardCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-          width: 1.5,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -38,26 +35,18 @@ class DashboardCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.black54),
           ),
           const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 23,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: Colors.black54,
-            ),
-          ),
+          Text(subtitle, style: const TextStyle(color: Colors.black54)),
         ],
       ),
     );

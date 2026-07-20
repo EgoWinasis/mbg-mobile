@@ -47,8 +47,9 @@ class ApiConfig {
 
   static const String latestConfirmation = '$baseUrl/confirmations/latest';
 
-  static const String distributionToday =
-    '$baseUrl/distribution/today';
+  static const String distributionToday = '$baseUrl/distribution/today';
+
+  static const String dashboard = '$baseUrl/dashboard';
 
   // Production nanti ganti:
   // static const String baseUrl = 'https://domainanda.com/api';
