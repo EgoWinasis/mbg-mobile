@@ -10,7 +10,6 @@ class DashboardModel {
 
   final DistributionModel? todayDistribution;
 
-
   DashboardModel({
     required this.profile,
     required this.statistics,
@@ -20,257 +19,156 @@ class DashboardModel {
     this.todayDistribution,
   });
 
-
-
-  factory DashboardModel.fromJson(
-      Map<String, dynamic> json) {
-
+  factory DashboardModel.fromJson(Map<String, dynamic> json) {
     return DashboardModel(
+      profile: ProfileModel.fromJson(json['profile'] ?? {}),
 
-      profile: ProfileModel.fromJson(
-        json['profile'] ?? {},
-      ),
+      statistics: StatisticModel.fromJson(json['statistics'] ?? {}),
 
+      latestConfirmations: ((json['latest_confirmations'] ?? []) as List)
+          .map((e) => ConfirmationModel.fromJson(e))
+          .toList(),
 
-      statistics: StatisticModel.fromJson(
-        json['statistics'] ?? {},
-      ),
+      nextSchedule: json['next_schedule'] != null
+          ? ScheduleModel.fromJson(json['next_schedule'])
+          : null,
 
+      todayMenu: json['today_menu'] != null
+          ? MenuModel.fromJson(json['today_menu'])
+          : null,
 
-      latestConfirmations:
-          ((json['latest_confirmations'] ?? [])
-              as List)
-              .map(
-                (e) => ConfirmationModel.fromJson(
-                  e,
-                ),
-              )
-              .toList(),
-
-
-      nextSchedule:
-          json['next_schedule'] != null
-              ? ScheduleModel.fromJson(
-                  json['next_schedule'],
-                )
-              : null,
-
-
-      todayMenu:
-          json['today_menu'] != null
-              ? MenuModel.fromJson(
-                  json['today_menu'],
-                )
-              : null,
-
-
-      todayDistribution:
-          json['today_distribution'] != null
-              ? DistributionModel.fromJson(
-                  json['today_distribution'],
-                )
-              : null,
-
+      todayDistribution: json['today_distribution'] != null
+          ? DistributionModel.fromJson(json['today_distribution'])
+          : null,
     );
   }
 }
 
-
-
-
-
 // ==================================================
-// PROFILE
+// PROFILE MODEL
 // ==================================================
 
 class ProfileModel {
-
   String name;
 
-  String? email;
+  final String? email;
 
-  String? type;
+  String? beneficiaryType;
 
-  String? photo;
+  final String? childName;
 
+  final String? childBirthDate;
 
+  final String? photo;
 
   ProfileModel({
-
     required this.name,
 
     this.email,
 
-    this.type,
+    this.beneficiaryType,
+
+    this.childName,
+
+    this.childBirthDate,
 
     this.photo,
-
   });
 
-
-
-  factory ProfileModel.fromJson(
-      Map<String,dynamic> json){
-
+  factory ProfileModel.fromJson(Map<String, dynamic> json) {
     return ProfileModel(
+      name: json['name']?.toString() ?? '',
 
-      name:
-          json['name']
-              ?.toString()
-              ??
-              '',
+      email: json['email']?.toString(),
 
+      beneficiaryType:
+          json['beneficiary_type']?.toString() ?? json['type']?.toString(),
 
-      email:
-          json['email']
-              ?.toString(),
+      childName: json['child_name']?.toString(),
 
+      childBirthDate: json['child_birth_date']?.toString(),
 
-      type:
-          json['type']
-              ?.toString()
-              ??
-              json['category']
-              ?.toString(),
-
-
-      photo:
-
-          json['photo_url']
-              ?.toString()
-              ??
-          json['photo']
-              ?.toString(),
-
+      photo: json['photo']?.toString() ?? json['photo_url']?.toString(),
     );
-
   }
-
 }
 
-
-
-
-
-
-
 // ==================================================
-// STATISTIC
+// STATISTIC MODEL
 // ==================================================
 
 class StatisticModel {
-
-
   final int confirmationCount;
-
 
   final int? childAge;
 
+  final PregnancyAgeModel? pregnancyAge;
 
   final int educationCount;
 
-
-
-
   StatisticModel({
-
     required this.confirmationCount,
 
     this.childAge,
 
-    required this.educationCount,
+    this.pregnancyAge,
 
+    required this.educationCount,
   });
 
-
-
-
-
-  factory StatisticModel.fromJson(
-      Map<String,dynamic> json){
-
-
+  factory StatisticModel.fromJson(Map<String, dynamic> json) {
     return StatisticModel(
-
-
       confirmationCount:
+          int.tryParse(json['confirmation_count']?.toString() ?? '0') ?? 0,
 
-          int.tryParse(
-            json['confirmation_count']
-                ?.toString()
-                ??
-                '0',
-          )
-          ??
-          0,
+      childAge: json['child_age'] != null
+          ? int.tryParse(json['child_age'].toString())
+          : null,
 
-
-
-      childAge:
-
-          json['child_age'] != null
-
-          ?
-
-          int.tryParse(
-            json['child_age']
-                .toString(),
-          )
-
-          :
-
-          null,
-
-
+      pregnancyAge: json['pregnancy_age'] != null
+          ? PregnancyAgeModel.fromJson(json['pregnancy_age'])
+          : null,
 
       educationCount:
-
-          int.tryParse(
-            json['education_count']
-                ?.toString()
-                ??
-                '0',
-          )
-          ??
-          0,
-
-
+          int.tryParse(json['education_count']?.toString() ?? '0') ?? 0,
     );
-
   }
-
 }
 
+// ==================================================
+// PREGNANCY AGE MODEL
+// ==================================================
 
+class PregnancyAgeModel {
+  final int weeks;
 
+  final int months;
 
+  PregnancyAgeModel({required this.weeks, required this.months});
 
+  factory PregnancyAgeModel.fromJson(Map<String, dynamic> json) {
+    return PregnancyAgeModel(
+      weeks: int.tryParse(json['weeks']?.toString() ?? '0') ?? 0,
 
+      months: int.tryParse(json['months']?.toString() ?? '0') ?? 0,
+    );
+  }
+}
 
 // ==================================================
-// CONFIRMATION
+// CONFIRMATION MODEL
 // ==================================================
 
 class ConfirmationModel {
-
-
   final int id;
-
 
   final String date;
 
-
   final String status;
-
 
   final int? rating;
 
-
-
-
-
   ConfirmationModel({
-
     required this.id,
 
     required this.date,
@@ -278,119 +176,45 @@ class ConfirmationModel {
     required this.status,
 
     this.rating,
-
   });
 
-
-
-
-
-  factory ConfirmationModel.fromJson(
-      Map<String,dynamic> json){
-
-
+  factory ConfirmationModel.fromJson(Map<String, dynamic> json) {
     return ConfirmationModel(
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
 
+      date: json['date']?.toString() ?? json['received_at']?.toString() ?? '',
 
-      id:
+      status: json['status']?.toString() ?? '',
 
-          int.tryParse(
-            json['id']
-                ?.toString()
-                ??
-                '0',
-          )
-          ??
-          0,
-
-
-
-      date:
-
-          json['received_at']
-              ?.toString()
-              ??
-          json['date']
-              ?.toString()
-              ??
-              '',
-
-
-
-      status:
-
-          json['status']
-              ?.toString()
-              ??
-              '',
-
-
-
-      rating:
-
-          json['rating'] != null
-
-          ?
-
-          int.tryParse(
-            json['rating']
-                .toString(),
-          )
-
-          :
-
-          null,
-
-
+      rating: json['rating'] != null
+          ? int.tryParse(json['rating'].toString())
+          : null,
     );
-
   }
-
 }
 
-
-
-
-
-
-
-
 // ==================================================
-// SCHEDULE
+// SCHEDULE MODEL
 // ==================================================
 
 class ScheduleModel {
-
-
   final int id;
-
 
   final String title;
 
-
   final String date;
-
 
   final String startTime;
 
-
   final String endTime;
-
 
   final String location;
 
-
   final String address;
-
 
   final String? image;
 
-
-
-
-
   ScheduleModel({
-
     required this.id,
 
     required this.title,
@@ -406,133 +230,49 @@ class ScheduleModel {
     required this.address,
 
     this.image,
-
   });
 
-
-
-
-
-  factory ScheduleModel.fromJson(
-      Map<String,dynamic> json){
-
-
+  factory ScheduleModel.fromJson(Map<String, dynamic> json) {
     return ScheduleModel(
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
 
+      title: json['title']?.toString() ?? '',
 
-      id:
+      date: json['date']?.toString() ?? '',
 
-          int.tryParse(
-            json['id']
-                ?.toString()
-                ??
-                '0',
-          )
-          ??
-          0,
+      startTime: json['start_time']?.toString() ?? '',
 
+      endTime: json['end_time']?.toString() ?? '',
 
+      location: json['location']?.toString() ?? '',
 
-      title:
+      address: json['address']?.toString() ?? '',
 
-          json['title']
-              ?.toString()
-              ??
-              '',
-
-
-
-      date:
-
-          json['date']
-              ?.toString()
-              ??
-              '',
-
-
-
-      startTime:
-
-          json['start_time']
-              ?.toString()
-              ??
-              '',
-
-
-
-      endTime:
-
-          json['end_time']
-              ?.toString()
-              ??
-              '',
-
-
-
-      location:
-
-          json['location']
-              ?.toString()
-              ??
-              '',
-
-
-
-      address:
-
-          json['address']
-              ?.toString()
-              ??
-              '',
-
-
-
-      image:
-
-          json['image_url']
-              ?.toString()
-              ??
-          json['image']
-              ?.toString(),
-
+      image: json['image']?.toString() ?? json['image_url']?.toString(),
     );
-
   }
-
 }
 
-
-
-
-
-
-
-
-
 // ==================================================
-// MENU MBG
+// MENU MODEL
 // ==================================================
 
 class MenuModel {
-
-
   final int id;
-
 
   final String title;
 
-
   final String description;
-
 
   final String? image;
 
+  final List<dynamic> items;
 
+  final List<dynamic> nutrition;
 
-
+  final List<dynamic> benefits;
 
   MenuModel({
-
     required this.id,
 
     required this.title,
@@ -541,140 +281,59 @@ class MenuModel {
 
     this.image,
 
+    required this.items,
+
+    required this.nutrition,
+
+    required this.benefits,
   });
 
-
-
-
-
-  factory MenuModel.fromJson(
-      Map<String,dynamic> json){
-
-
+  factory MenuModel.fromJson(Map<String, dynamic> json) {
     return MenuModel(
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
 
+      title: json['title']?.toString() ?? '',
 
-      id:
+      description: json['description']?.toString() ?? '',
 
-          int.tryParse(
-            json['id']
-                ?.toString()
-                ??
-                '0',
-          )
-          ??
-          0,
+      image: json['image']?.toString() ?? json['image_url']?.toString(),
 
+      items: json['items'] ?? [],
 
+      nutrition: json['nutrition'] ?? json['nutritions'] ?? [],
 
-      title:
-
-          json['title']
-              ?.toString()
-              ??
-              '',
-
-
-
-      description:
-
-          json['description']
-              ?.toString()
-              ??
-              '',
-
-
-
-      image:
-
-          json['image_url']
-              ?.toString()
-              ??
-          json['image']
-              ?.toString(),
-
+      benefits: json['benefits'] ?? [],
     );
-
   }
-
 }
 
-
-
-
-
-
-
-
 // ==================================================
-// DISTRIBUTION
+// DISTRIBUTION MODEL
 // ==================================================
 
 class DistributionModel {
-
-
   final String status;
-
 
   final int jumlahDikirim;
 
-
   final String? keterangan;
 
-
-
-
   DistributionModel({
-
     required this.status,
 
     required this.jumlahDikirim,
 
     this.keterangan,
-
   });
 
-
-
-
-
-  factory DistributionModel.fromJson(
-      Map<String,dynamic> json){
-
-
+  factory DistributionModel.fromJson(Map<String, dynamic> json) {
     return DistributionModel(
-
-
-      status:
-
-          json['status']
-              ?.toString()
-              ??
-              '',
-
-
+      status: json['status']?.toString() ?? '',
 
       jumlahDikirim:
+          int.tryParse(json['jumlah_dikirim']?.toString() ?? '0') ?? 0,
 
-          int.tryParse(
-            json['jumlah_dikirim']
-                ?.toString()
-                ??
-                '0',
-          )
-          ??
-          0,
-
-
-
-      keterangan:
-
-          json['keterangan']
-              ?.toString(),
-
-
+      keterangan: json['keterangan']?.toString(),
     );
-
   }
-
 }

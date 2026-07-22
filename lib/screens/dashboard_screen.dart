@@ -14,6 +14,7 @@ import 'riwayat_penilaian_screen.dart';
 import 'jadwal_screen.dart';
 import 'edukasi_screen.dart';
 import 'menu_screen.dart';
+
 import '../core/config/api_config.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -46,18 +47,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (user != null) {
         data.profile.name = user['name'] ?? data.profile.name;
 
-        data.profile.type = user['type'] ?? data.profile.type;
+        data.profile.beneficiaryType =
+            user['beneficiary_type'] ?? data.profile.beneficiaryType;
       }
 
       if (!mounted) return;
 
       setState(() {
         dashboard = data;
-
         loading = false;
       });
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("ERROR DASHBOARD : $e");
 
       if (!mounted) return;
 
@@ -67,10 +68,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String getProfileImage() {
-    final type = dashboard?.profile.type?.toLowerCase();
+  // =====================================================
+  // BENEFICIARY TYPE
+  // backend enum:
+  // pregnant
+  // toddler_parent
+  // =====================================================
 
-    if (type == 'ibu_hamil') {
+  bool isIbuHamil() {
+    final type = dashboard?.profile.beneficiaryType?.toLowerCase().trim();
+
+    return type == 'pregnant';
+  }
+
+  String getProfileImage() {
+    if (isIbuHamil()) {
       return 'assets/images/hamil.png';
     }
 
@@ -78,13 +90,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   String getProfileLabel() {
-    final type = dashboard?.profile.type?.toLowerCase();
+    if (isIbuHamil()) {
+      final pregnancy = dashboard?.statistics.pregnancyAge;
 
-    if (type == 'ibu_hamil') {
+      if (pregnancy != null) {
+        return '🤰 Ibu Hamil • '
+            '${pregnancy.months} Bulan '
+            '${pregnancy.weeks} Minggu';
+      }
+
       return '🤰 Ibu Hamil';
     }
 
+    final childName = dashboard?.profile.childName;
+
     final umur = dashboard?.statistics.childAge;
+
+    if (childName != null && childName.isNotEmpty) {
+      if (umur != null) {
+        return '👶 $childName • $umur Bulan';
+      }
+
+      return '👶 $childName';
+    }
 
     if (umur != null) {
       return '👶 Balita • $umur Bulan';
@@ -213,16 +241,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return months[month];
   }
 
-  String getYear(String date) {
-    final split = date.split('-');
-
-    if (split.length < 1) {
-      return '';
-    }
-
-    return split[0];
-  }
-
   @override
   Widget build(BuildContext context) {
     if (loading) {
@@ -239,43 +257,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.white,
 
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(18),
+        child: RefreshIndicator(
+          color: primaryBlue,
 
-          child: Column(
-            children: [
-              _header(),
+          onRefresh: () async {
+            await loadDashboard();
+          },
 
-              const SizedBox(height: 20),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
 
-              _statistics(),
+            padding: const EdgeInsets.all(18),
 
-              const SizedBox(height: 18),
+            child: Column(
+              children: [
+                _header(),
 
-              _history(),
+                const SizedBox(height: 20),
 
-              const SizedBox(height: 18),
+                _statistics(),
 
-              _schedule(),
+                const SizedBox(height: 18),
 
-              const SizedBox(height: 18),
+                _history(),
 
-              _menu(),
+                const SizedBox(height: 18),
 
-              const SizedBox(height: 18),
+                _schedule(),
 
-              _rating(),
+                const SizedBox(height: 18),
 
-              const SizedBox(height: 18),
+                _menu(),
 
-              _education(),
-            ],
+                const SizedBox(height: 18),
+
+                _rating(),
+
+                const SizedBox(height: 18),
+
+                _education(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
   // ================= HEADER =================
 
   Widget _header() {
@@ -313,7 +340,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 height: 42,
 
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
 
                   shape: BoxShape.circle,
@@ -450,9 +477,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           color: Colors.indigo,
 
-          title: 'Usia Balita',
+          title: isIbuHamil() ? 'Usia Kandungan' : 'Usia Balita',
 
-          value: dashboard!.statistics.childAge?.toString() ?? '-',
+          value: isIbuHamil()
+              ? dashboard!.statistics.pregnancyAge?.months.toString() ?? '-'
+              : dashboard!.statistics.childAge?.toString() ?? '-',
 
           subtitle: 'Bulan',
         ),
@@ -540,12 +569,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          // HEADER
           Row(
             children: [
               const Icon(
                 Icons.calendar_month_rounded,
+
                 color: Colors.green,
+
                 size: 22,
               ),
 
@@ -565,8 +595,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
 
             children: [
-              // TANGGAL
-              Container(
+              SizedBox(
                 width: 85,
 
                 height: 100,
@@ -580,8 +609,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       style: const TextStyle(
                         fontSize: 30,
+
                         height: 1,
+
                         fontWeight: FontWeight.bold,
+
                         color: Colors.green,
                       ),
                     ),
@@ -593,7 +625,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                       style: const TextStyle(
                         fontSize: 13,
+
                         fontWeight: FontWeight.bold,
+
                         color: Colors.green,
                       ),
                     ),
@@ -603,7 +637,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(width: 16),
 
-              // DETAIL
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -613,7 +646,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         const Icon(
                           Icons.access_time_rounded,
+
                           size: 16,
+
                           color: Colors.green,
                         ),
 
@@ -624,8 +659,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                           style: TextStyle(
                             fontSize: 12,
+
                             color: Colors.grey.shade700,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -637,7 +672,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         const Icon(
                           Icons.location_on_outlined,
+
                           size: 16,
+
                           color: Colors.green,
                         ),
 
@@ -653,6 +690,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                             style: TextStyle(
                               fontSize: 12,
+
                               color: Colors.grey.shade700,
                             ),
                           ),
@@ -668,7 +706,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         const Icon(
                           Icons.place_outlined,
+
                           size: 16,
+
                           color: Colors.green,
                         ),
 
@@ -684,6 +724,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                             style: TextStyle(
                               fontSize: 12,
+
                               color: Colors.grey.shade700,
                             ),
                           ),
@@ -698,7 +739,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 18),
 
-          // BUTTON
           SizedBox(
             width: double.infinity,
 
@@ -740,7 +780,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
   // ================= MENU HARI INI =================
 
   Widget _menu() {
@@ -757,12 +796,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          // HEADER
           Row(
             children: [
               const Icon(
                 Icons.restaurant_menu_rounded,
+
                 color: Colors.indigo,
+
                 size: 22,
               ),
 
@@ -778,7 +818,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 14),
 
-          // IMAGE
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
 
@@ -817,7 +856,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 12),
 
-          // TITLE
           Text(
             menu.title,
 
@@ -830,7 +868,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 6),
 
-          // DESCRIPTION
           Text(
             menu.description,
 
@@ -843,7 +880,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 18),
 
-          // BUTTON
           SizedBox(
             width: double.infinity,
 
@@ -997,7 +1033,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          // HEADER
           Row(
             children: [
               const Icon(Icons.menu_book_rounded, color: primaryBlue, size: 22),

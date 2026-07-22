@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'detail_penilaian_screen.dart';
+
+import '../models/confirmation_model.dart';
+import '../services/confirmation_service.dart';
 
 class RiwayatPenilaianScreen extends StatefulWidget {
   const RiwayatPenilaianScreen({super.key});
@@ -11,28 +15,43 @@ class RiwayatPenilaianScreen extends StatefulWidget {
 class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
   DateTime? selectedMonth;
 
-  final List<Map<String, String>> riwayat = [
-    {
-      "tanggal": "22 Juni 2026",
-      "tanggalFormat": "2026-06-22",
-      "status": "Diterima",
-    },
-    {
-      "tanggal": "21 Mei 2026",
-      "tanggalFormat": "2026-05-21",
-      "status": "Pending",
-    },
-    {
-      "tanggal": "20 Juni 2026",
-      "tanggalFormat": "2026-06-20",
-      "status": "Diterima",
-    },
-    {
-      "tanggal": "10 April 2026",
-      "tanggalFormat": "2026-04-10",
-      "status": "Diterima",
-    },
-  ];
+  final ConfirmationService confirmationService = ConfirmationService();
+
+  List<ConfirmationModel> riwayat = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    loadRiwayat();
+  }
+
+  Future<void> loadRiwayat({int? month, int? year}) async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final result = await confirmationService.getHistoryConfirmation(
+        month: month,
+        year: year,
+      );
+
+      setState(() {
+        riwayat = result;
+
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("ERROR RIWAYAT : $e");
+
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   Future<void> pilihBulan() async {
     final picked = await showDatePicker(
@@ -49,30 +68,51 @@ class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
       setState(() {
         selectedMonth = picked;
       });
+
+      loadRiwayat(month: picked.month, year: picked.year);
     }
   }
 
-  List<Map<String, String>> get filteredRiwayat {
-    if (selectedMonth == null) {
-      return riwayat;
+  String formatTanggal(DateTime? date) {
+    if (date == null) {
+      return "-";
     }
 
-    return riwayat.where((item) {
-      final tanggalString = item["tanggalFormat"];
+    return "${date.day} "
+        "${_namaBulan(date.month)} "
+        "${date.year}";
+  }
 
-      if (tanggalString == null) {
-        return false;
-      }
+  String _namaBulan(int bulan) {
+    const nama = [
+      "",
 
-      final tanggal = DateTime.tryParse(tanggalString);
+      "Januari",
 
-      if (tanggal == null) {
-        return false;
-      }
+      "Februari",
 
-      return tanggal.month == selectedMonth!.month &&
-          tanggal.year == selectedMonth!.year;
-    }).toList();
+      "Maret",
+
+      "April",
+
+      "Mei",
+
+      "Juni",
+
+      "Juli",
+
+      "Agustus",
+
+      "September",
+
+      "Oktober",
+
+      "November",
+
+      "Desember",
+    ];
+
+    return nama[bulan];
   }
 
   @override
@@ -135,7 +175,9 @@ class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
                   label: Text(
                     selectedMonth == null
                         ? "Filter Bulan"
-                        : "Bulan ${selectedMonth!.month}/${selectedMonth!.year}",
+                        : "Bulan "
+                              "${selectedMonth!.month}/"
+                              "${selectedMonth!.year}",
                   ),
                 ),
               ),
@@ -201,15 +243,17 @@ class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
 
               // LIST
               Expanded(
-                child: filteredRiwayat.isEmpty
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : riwayat.isEmpty
                     ? const Center(child: Text("Data tidak ditemukan"))
                     : ListView.builder(
-                        itemCount: filteredRiwayat.length,
+                        itemCount: riwayat.length,
 
                         itemBuilder: (context, index) {
-                          final item = filteredRiwayat[index];
+                          final item = riwayat[index];
 
-                          final isDiterima = item["status"] == "Diterima";
+                          final isDiterima = item.status == "diterima";
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 8),
@@ -234,7 +278,7 @@ class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
                                   flex: 3,
 
                                   child: Text(
-                                    item["tanggal"] ?? "-",
+                                    formatTanggal(item.receivedAt),
 
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w500,
@@ -262,7 +306,7 @@ class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
                                       const SizedBox(width: 4),
 
                                       Text(
-                                        item["status"] ?? "-",
+                                        item.status ?? "-",
 
                                         style: TextStyle(
                                           color: isDiterima
@@ -290,7 +334,9 @@ class _RiwayatPenilaianScreenState extends State<RiwayatPenilaianScreen> {
 
                                             MaterialPageRoute(
                                               builder: (_) =>
-                                                  const DetailPenilaianScreen(),
+                                                  DetailPenilaianScreen(
+                                                    confirmationId: item.id,
+                                                  ),
                                             ),
                                           );
                                         },

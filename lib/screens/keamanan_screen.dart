@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ubah_password_screen.dart';
 
 class KeamananScreen extends StatefulWidget {
   const KeamananScreen({super.key});
@@ -116,50 +117,17 @@ class _KeamananScreenState extends State<KeamananScreen> {
                       title: "Ubah Password",
                       subtitle: "Ganti password akun Anda",
 
-                      onTap: () {},
-                    ),
-
-                    menuKeamanan(
-                      icon: Icons.fingerprint,
-                      title: "Login Biometrik",
-                      subtitle: "Gunakan sidik jari untuk masuk",
-
-                      trailing: Switch(
-                        value: biometrik,
-
-                        thumbColor: WidgetStateProperty.resolveWith<Color>((
-                          states,
-                        ) {
-                          if (states.contains(WidgetState.selected)) {
-                            return Colors.white;
-                          }
-
-                          return Colors.grey;
-                        }),
-
-                        trackColor: WidgetStateProperty.resolveWith<Color>((
-                          states,
-                        ) {
-                          if (states.contains(WidgetState.selected)) {
-                            return Colors.blue;
-                          }
-
-                          return Colors.grey.shade300;
-                        }),
-
-                        onChanged: (value) {
-                          setState(() {
-                            biometrik = value;
-                          });
-                        },
-                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const UbahPasswordScreen(),
+                          ),
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 20),
-
-                    
-                    
-                    
                   ],
                 ),
               ),

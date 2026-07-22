@@ -33,17 +33,22 @@ class DistributionModel {
 
   factory DistributionModel.fromJson(Map<String, dynamic> json) {
     return DistributionModel(
-      id: json['id'],
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
 
-      scheduleId: json['schedule_id'],
+      scheduleId: json['schedule_id'] != null
+          ? int.tryParse(json['schedule_id'].toString())
+          : null,
 
-      menuId: json['menu_id'],
+      menuId: json['menu_id'] != null
+          ? int.tryParse(json['menu_id'].toString())
+          : null,
 
-      jumlahDikirim: json['jumlah_dikirim'] ?? 0,
+      jumlahDikirim:
+          int.tryParse(json['jumlah_dikirim']?.toString() ?? '0') ?? 0,
 
-      keterangan: json['keterangan'],
+      keterangan: json['keterangan']?.toString(),
 
-      status: json['status'],
+      status: json['status']?.toString(),
 
       schedule: json['schedule'] != null
           ? ScheduleModel.fromJson(json['schedule'])

@@ -1,13 +1,133 @@
 import 'package:flutter/material.dart';
+
+import '../models/schedule_model.dart';
+import '../services/schedule_service.dart';
+
 import 'pengaturan_notifikasi_screen.dart';
 
-class NotifikasiScreen extends StatelessWidget {
+class NotifikasiScreen extends StatefulWidget {
   const NotifikasiScreen({super.key});
 
-  static const primaryBlue = Color(0xFF2563EB);
+  @override
+  State<NotifikasiScreen> createState() => _NotifikasiScreenState();
+}
+
+class _NotifikasiScreenState extends State<NotifikasiScreen> {
+  final ScheduleService scheduleService = ScheduleService();
+
+  List<ScheduleModel> schedules = [];
+
+  bool loading = true;
+
+  String selectedCategory = "Semua";
+
+  @override
+  void initState() {
+    super.initState();
+
+    loadNotification();
+  }
+
+  Future<void> loadNotification() async {
+    try {
+      final result = await scheduleService.getSchedules();
+
+      setState(() {
+        schedules = result;
+
+        loading = false;
+      });
+    } catch (e) {
+      debugPrint("ERROR NOTIFIKASI : $e");
+
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  String formatTanggal(String? date) {
+    if (date == null) {
+      return "-";
+    }
+
+    final parsed = DateTime.tryParse(date);
+
+    if (parsed == null) {
+      return date;
+    }
+
+    return "${parsed.day} "
+        "${namaBulan(parsed.month)} "
+        "${parsed.year}";
+  }
+
+  String namaBulan(int bulan) {
+    const bulanList = [
+      "",
+
+      "Januari",
+
+      "Februari",
+
+      "Maret",
+
+      "April",
+
+      "Mei",
+
+      "Juni",
+
+      "Juli",
+
+      "Agustus",
+
+      "September",
+
+      "Oktober",
+
+      "November",
+
+      "Desember",
+    ];
+
+    return bulanList[bulan];
+  }
+
+  List<ScheduleModel> get filteredSchedules {
+    if (selectedCategory == "Semua") {
+      return schedules;
+    }
+
+    return schedules.where((item) {
+      final type = item.type?.toLowerCase() ?? "";
+
+      return type == selectedCategory.toLowerCase();
+    }).toList();
+  }
+
+  bool isLewat(ScheduleModel item) {
+    if (item.date == null) {
+      return false;
+    }
+
+    final tanggal = DateTime.tryParse(item.date!);
+
+    if (tanggal == null) {
+      return false;
+    }
+
+    return tanggal.isBefore(DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final data = filteredSchedules;
+
+    final akanDatang = data.where((e) => !isLewat(e)).toList();
+
+    final sudahLewat = data.where((e) => isLewat(e)).toList();
+
     return Scaffold(
       backgroundColor: Colors.white,
 
@@ -17,27 +137,25 @@ class NotifikasiScreen extends StatelessWidget {
 
           child: Column(
             children: [
-
               // HEADER
               Row(
                 children: [
-
                   IconButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.blue,
-                    ),
+
+                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
                   ),
 
                   const Expanded(
                     child: Center(
                       child: Text(
-                        'Notifikasi',
+                        "Notifikasi",
+
                         style: TextStyle(
                           fontSize: 18,
+
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -48,14 +166,15 @@ class NotifikasiScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
+
                         MaterialPageRoute(
                           builder: (_) => const PengaturanNotifikasiScreen(),
                         ),
                       );
                     },
+
                     icon: const Icon(Icons.settings, color: Colors.blue),
                   ),
-
                 ],
               ),
 
@@ -63,30 +182,17 @@ class NotifikasiScreen extends StatelessWidget {
 
               // FILTER
               SizedBox(
-                height: 40,
+                height: 42,
 
                 child: ListView(
                   scrollDirection: Axis.horizontal,
 
-                  children: const [
+                  children: [
+                    filterChip("Semua"),
 
-                    FilterChipItem(
-                      title: 'Semua',
-                      isSelected: true,
-                    ),
+                    filterChip("MBG"),
 
-                    FilterChipItem(
-                      title: 'MBG',
-                    ),
-
-                    FilterChipItem(
-                      title: 'Posyandu',
-                    ),
-
-                    FilterChipItem(
-                      title: 'Informasi',
-                    ),
-
+                    filterChip("Posyandu"),
                   ],
                 ),
               ),
@@ -94,160 +200,75 @@ class NotifikasiScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               Expanded(
-                child: ListView(
+                child: loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : data.isEmpty
+                    ? const Center(child: Text("Tidak ada jadwal"))
+                    : ListView(
+                        children: [
+                          if (akanDatang.isNotEmpty)
+                            const SectionTitle(title: "Jadwal Akan Datang"),
 
-                  children: const [
+                          ...akanDatang.map(
+                            (item) => NotificationCard(
+                              item: item,
 
-                    Text(
-                      'Hari ini',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
+                              sudahLewat: false,
+
+                              tanggal: formatTanggal(item.date),
+                            ),
+                          ),
+
+                          if (sudahLewat.isNotEmpty)
+                            const SectionTitle(title: "Jadwal Terlewati"),
+
+                          ...sudahLewat.map(
+                            (item) => NotificationCard(
+                              item: item,
+
+                              sudahLewat: true,
+
+                              tanggal: formatTanggal(item.date),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-
-                    SizedBox(height: 10),
-
-                    NotificationCard(
-                      icon: Icons.notifications,
-                      iconColor: Colors.green,
-                      category: 'Pengingat MBG',
-                      title:
-                          'Jadwal pembagian MBG besok, 20 Juni 2026',
-                      description:
-                          'Jangan lupa datang tepat waktu ya, Bu 😊',
-                      time: '08.00 WIB',
-                      image: 'assets/images/balita.png',
-                    ),
-
-                    SizedBox(height: 12),
-
-                    NotificationCard(
-                      icon: Icons.calendar_month,
-                      iconColor: Colors.blue,
-                      category: 'Jadwal Posyandu',
-                      title:
-                          'Posyandu bulan Juni akan dilaksanakan',
-                      description:
-                          'Kamis, 22 Juni 2026\n08.00 - 11.00 WIB\nPosyandu Melati',
-                      time: 'Kemarin',
-                      image: 'assets/images/balita.png',
-                    ),
-
-                    SizedBox(height: 20),
-
-                    Text(
-                      '18 Juni 2026',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    SizedBox(height: 10),
-
-                    NotificationCard(
-                      icon: Icons.campaign,
-                      iconColor: Colors.orange,
-                      category: 'Informasi',
-                      title:
-                          'Menu MBG minggu ini sudah tersedia!',
-                      description:
-                          'Yuk lihat menu dan informasi gizinya di aplikasi.',
-                      time: '18/06/2026',
-                      image: 'assets/images/balita.png',
-                    ),
-
-                    SizedBox(height: 20),
-
-                    Text(
-                      '17 Juni 2026',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    SizedBox(height: 10),
-
-                    NotificationCard(
-                      icon: Icons.check_circle,
-                      iconColor: Colors.green,
-                      category: 'MBG',
-                      title:
-                          'Terima kasih telah hadir dan menerima MBG hari ini 😊',
-                      description:
-                          'Sampai jumpa di kegiatan berikutnya.',
-                      time: '17/06/2026',
-                      image: 'assets/images/balita.png',
-                    ),
-
-                  ],
-                ),
               ),
-
             ],
           ),
         ),
       ),
     );
   }
-}
 
-// =============================
-// FILTER CHIP
-// =============================
+  Widget filterChip(String title) {
+    final aktif = selectedCategory == title;
 
-class FilterChipItem extends StatelessWidget {
-
-  final String title;
-  final bool isSelected;
-
-  const FilterChipItem({
-    super.key,
-    required this.title,
-    this.isSelected = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Container(
-
-      margin: const EdgeInsets.only(right: 10),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedCategory = title;
+        });
+      },
 
       child: Container(
+        margin: const EdgeInsets.only(right: 10),
 
-        padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
 
         decoration: BoxDecoration(
+          color: aktif ? Colors.blue : Colors.grey.shade100,
 
-          color: isSelected
-              ? Colors.blue
-              : Colors.grey.shade100,
-
-          borderRadius:
-              BorderRadius.circular(20),
-
+          borderRadius: BorderRadius.circular(20),
         ),
 
         child: Text(
-
           title,
 
           style: TextStyle(
-
-            color: isSelected
-                ? Colors.white
-                : Colors.black87,
+            color: aktif ? Colors.white : Colors.black87,
 
             fontWeight: FontWeight.w500,
-
-            fontSize: 13,
-
           ),
         ),
       ),
@@ -255,171 +276,128 @@ class FilterChipItem extends StatelessWidget {
   }
 }
 
-// =============================
-// NOTIFICATION CARD
-// =============================
+class SectionTitle extends StatelessWidget {
+  final String title;
+
+  const SectionTitle({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10, top: 5),
+
+      child: Text(
+        title,
+
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
 
 class NotificationCard extends StatelessWidget {
+  final ScheduleModel item;
 
-  final IconData icon;
-  final Color iconColor;
-  final String category;
-  final String title;
-  final String description;
-  final String time;
-  final String image;
+  final bool sudahLewat;
+
+  final String tanggal;
 
   const NotificationCard({
     super.key,
-    required this.icon,
-    required this.iconColor,
-    required this.category,
-    required this.title,
-    required this.description,
-    required this.time,
-    required this.image,
+
+    required this.item,
+
+    required this.sudahLewat,
+
+    required this.tanggal,
   });
 
   @override
   Widget build(BuildContext context) {
+    final type = item.type?.toLowerCase() ?? "mbg";
+
+    final isPosyandu = type == "posyandu";
 
     return Container(
-
       margin: const EdgeInsets.only(bottom: 12),
 
       padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-
         color: Colors.white,
 
-        borderRadius:
-            BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16),
 
         border: Border.all(
-          color:
-              Colors.grey.withValues(alpha: 0.15),
+          color: sudahLewat ? Colors.grey.shade300 : Colors.blue.shade100,
         ),
-
       ),
 
       child: Row(
-
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-
         children: [
-
-          Container(
-
-            width: 50,
-            height: 50,
-
-            decoration: BoxDecoration(
-
-              color:
-                  iconColor.withValues(alpha: 0.15),
-
-              shape: BoxShape.circle,
-
-            ),
+          CircleAvatar(
+            backgroundColor: (isPosyandu ? Colors.purple : Colors.green)
+                .withOpacity(.15),
 
             child: Icon(
-              icon,
-              color: iconColor,
-            ),
+              isPosyandu ? Icons.child_care : Icons.restaurant,
 
+              color: isPosyandu ? Colors.purple : Colors.green,
+            ),
           ),
 
           const SizedBox(width: 12),
 
           Expanded(
-
             child: Column(
-
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
-
-                Row(
-
-                  children: [
-
-                    Expanded(
-                      child: Text(
-
-                        category,
-
-                        style: TextStyle(
-                          color: iconColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-
-                    Text(
-                      time,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 11,
-                      ),
-                    ),
-
-                  ],
-                ),
-
-                const SizedBox(height: 6),
-
                 Text(
+                  isPosyandu ? "Posyandu" : "MBG",
 
-                  title,
+                  style: TextStyle(
+                    color: isPosyandu ? Colors.purple : Colors.green,
 
-                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
                   ),
-
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
 
                 Text(
+                  item.title ?? "-",
 
-                  description,
-
-                  style: const TextStyle(
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
 
+                Text(tanggal),
+
+                if (sudahLewat)
+                  const Text(
+                    "Sudah terlaksana",
+
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
               ],
             ),
           ),
 
-          const SizedBox(width: 10),
-
           ClipRRect(
-
-            borderRadius:
-                BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
 
             child: Image.asset(
-
-              image,
+              isPosyandu
+                  ? "assets/images/posyandu.png"
+                  : "assets/images/mbg.png",
 
               width: 70,
+
               height: 70,
 
               fit: BoxFit.cover,
-
             ),
-
           ),
-
         ],
       ),
     );

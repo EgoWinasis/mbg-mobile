@@ -49,30 +49,35 @@ class ConfirmationModel {
 
   factory ConfirmationModel.fromJson(Map<String, dynamic> json) {
     return ConfirmationModel(
-      id: json['id'],
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
 
-      distributionId: json['distribution_id'],
+      distributionId:
+          int.tryParse(json['distribution_id']?.toString() ?? '0') ?? 0,
 
-      userId: json['user_id'],
+      userId: json['user_id'] != null
+          ? int.tryParse(json['user_id'].toString())
+          : null,
 
-      rating: json['rating'],
+      rating: json['rating'] != null
+          ? int.tryParse(json['rating'].toString())
+          : null,
 
-      kritik: json['kritik'],
+      kritik: json['kritik']?.toString(),
 
-      photo: json['photo'],
+      photo: json['photo']?.toString() ?? json['photo_url']?.toString(),
 
       latitude: json['latitude'] != null
-          ? double.parse(json['latitude'].toString())
+          ? double.tryParse(json['latitude'].toString())
           : null,
 
       longitude: json['longitude'] != null
-          ? double.parse(json['longitude'].toString())
+          ? double.tryParse(json['longitude'].toString())
           : null,
 
-      status: json['status'],
+      status: json['status']?.toString(),
 
       receivedAt: json['received_at'] != null
-          ? DateTime.parse(json['received_at'])
+          ? DateTime.tryParse(json['received_at'].toString())
           : null,
 
       distribution: json['distribution'] != null

@@ -38,10 +38,10 @@ class RiwayatItem extends StatelessWidget {
           Row(
             children: [
               Icon(
-                status == 'Diterima'
+                status == 'diterima'
                     ? Icons.check_circle
                     : Icons.pending,
-                color: status == 'Diterima'
+                color: status == 'diterima'
                     ? Colors.green
                     : Colors.orange,
                 size: 18,
@@ -50,7 +50,7 @@ class RiwayatItem extends StatelessWidget {
               Text(
                 status,
                 style: TextStyle(
-                  color: status == 'Diterima'
+                  color: status == 'diterima'
                       ? Colors.green
                       : Colors.orange,
                 ),

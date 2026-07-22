@@ -6,33 +6,17 @@ import 'package:image_picker/image_picker.dart';
 import '../core/storage/secure_storage.dart';
 import '../services/profile_service.dart';
 
-
-
 class EditProfileScreen extends StatefulWidget {
-
   const EditProfileScreen({super.key});
 
-
   @override
-  State<EditProfileScreen> createState() =>
-      _EditProfileScreenState();
-
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-
-
-
-
 class _EditProfileScreenState extends State<EditProfileScreen> {
-
-
-  final ProfileService profileService =
-      ProfileService();
-
-
+  final ProfileService profileService = ProfileService();
 
   File? profileImage;
-
 
   bool loading = true;
 
@@ -40,34 +24,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   bool saving = false;
 
+  final namaController = TextEditingController();
 
+  final phoneController = TextEditingController();
 
+  final emailController = TextEditingController();
 
-  final namaController =
-      TextEditingController();
+  final alamatController = TextEditingController();
 
+  final nikController = TextEditingController();
 
-  final phoneController =
-      TextEditingController();
+  final birthDateController = TextEditingController();
 
+  // tambahan data anak
 
-  final emailController =
-      TextEditingController();
+  final childNameController = TextEditingController();
 
-
-  final alamatController =
-      TextEditingController();
-
-
-  final nikController =
-      TextEditingController();
-
-
-  final birthDateController =
-      TextEditingController();
-
-
-
+  final childBirthDateController = TextEditingController();
 
   String gender = "";
 
@@ -75,29 +48,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String photoUrl = "";
 
-
-
-
-
-
   @override
   void initState() {
-
     super.initState();
 
     loadUser();
-
   }
-
-
-
-
-
-
 
   @override
   void dispose() {
-
     namaController.dispose();
 
     phoneController.dispose();
@@ -110,1449 +69,465 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     birthDateController.dispose();
 
+    childNameController.dispose();
+
+    childBirthDateController.dispose();
 
     super.dispose();
-
   }
-
-
-
-
-
-
-
 
   Future<void> loadUser() async {
+    final user = await SecureStorage.getUser();
 
-
-    final user =
-    await SecureStorage.getUser();
-
-
-
-    if(user != null){
-
-
-
-      final profile =
-      user['profile'];
-
-
+    if (user != null) {
+      final profile = user['profile'];
 
       setState(() {
+        namaController.text = user['name'] ?? "";
 
+        phoneController.text = user['phone'] ?? "";
 
+        emailController.text = user['email'] ?? "";
 
-        namaController.text =
-            user['name'] ?? "";
+        if (profile != null) {
+          alamatController.text = profile['address'] ?? "";
 
+          nikController.text = profile['nik'] ?? "";
 
+          birthDateController.text = profile['birth_date'] ?? "";
 
-        phoneController.text =
-            user['phone'] ?? "";
+          gender = profile['gender'] ?? "";
 
+          beneficiaryType = profile['beneficiary_type'] ?? "";
 
+          photoUrl = profile['photo'] ?? "";
 
-        emailController.text =
-            user['email'] ?? "";
+          childNameController.text = profile['child_name'] ?? "";
 
-
-
-
-
-        if(profile != null){
-
-
-
-          alamatController.text =
-              profile['address'] ?? "";
-
-
-
-          nikController.text =
-              profile['nik'] ?? "";
-
-
-
-          birthDateController.text =
-              profile['birth_date'] ?? "";
-
-
-
-          gender =
-              profile['gender'] ?? "";
-
-
-
-          beneficiaryType =
-              profile['beneficiary_type'] ?? "";
-
-
-
-          photoUrl =
-              profile['photo'] ?? "";
-
+          childBirthDateController.text = profile['child_birth_date'] ?? "";
         }
 
-
-
-
         loading = false;
-
-
-
       });
-
-
-
-    }else{
-
-
-
+    } else {
       setState(() {
-
         loading = false;
-
       });
-
-
     }
-
-
   }
-
-
-
-
-
-
-
 
   Future<void> pickPhoto() async {
+    final picker = ImagePicker();
 
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
 
-    final picker =
-    ImagePicker();
-
-
-
-    final image =
-    await picker.pickImage(
-
-      source:
-      ImageSource.gallery,
-
-
-      imageQuality:
-      85,
-
-
+      imageQuality: 85,
     );
 
-
-
-    if(image == null)
-      return;
-
-
+    if (image == null) return;
 
     setState(() {
-
-
-      profileImage =
-          File(image.path);
-
-
+      profileImage = File(image.path);
     });
-
-
-
 
     await uploadPhoto();
-
-
   }
-
-
-
-
-
-
-
 
   Future<void> uploadPhoto() async {
-
-
-    if(profileImage == null)
-      return;
-
-
+    if (profileImage == null) return;
 
     setState(() {
-
-
       uploadingPhoto = true;
-
-
     });
-
-
-
-
-
-    try{
-
-
-      await profileService.uploadPhoto(
-
-        profileImage!,
-
-      );
-
-
-
-
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-
-        const SnackBar(
-
-          content:
-          Text(
-
-            "Foto profil berhasil diperbarui",
-
-          ),
-
-        ),
-
-
-      );
-
-
-
-    }catch(e){
-
-
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-
-        SnackBar(
-
-          content:
-          Text(
-
-            e.toString(),
-
-          ),
-
-        ),
-
-
-      );
-
-
-
-    }
-
-
-
-
-    if(mounted){
-
-
-      setState(() {
-
-
-        uploadingPhoto = false;
-
-
-      });
-
-
-    }
-
-
-
-  }
-
-    Future<void> saveProfile() async {
-
-
-    setState(() {
-
-      saving = true;
-
-    });
-
-
 
     try {
+      await profileService.uploadPhoto(profileImage!);
 
-
-
-      await profileService.updateProfile(
-
-
-        name:
-        namaController.text,
-
-
-        phone:
-        phoneController.text,
-
-
-        email:
-        emailController.text,
-
-
-        address:
-        alamatController.text,
-
-
-        nik:
-        nikController.text,
-
-
-        birthDate:
-        birthDateController.text,
-
-
-        gender:
-        gender,
-
-
-        beneficiaryType:
-        beneficiaryType,
-
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Foto profil berhasil diperbarui")),
       );
-
-
-
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-
-        const SnackBar(
-
-          content:
-          Text(
-
-            "Profile berhasil diperbarui",
-
-          ),
-
-        ),
-
-
-      );
-
-
-
-
-      Navigator.pop(
-
+    } catch (e) {
+      ScaffoldMessenger.of(
         context,
-
-        true,
-
-      );
-
-
-
-
-    }catch(e){
-
-
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-
-        SnackBar(
-
-          content:
-          Text(
-
-            e.toString(),
-
-          ),
-
-        ),
-
-
-      );
-
-
-
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
 
-
-
-    if(mounted){
-
-
+    if (mounted) {
       setState(() {
-
-        saving = false;
-
+        uploadingPhoto = false;
       });
-
-
     }
-
-
   }
 
+  Future<void> saveProfile() async {
+    setState(() {
+      saving = true;
+    });
 
+    try {
+      await profileService.updateProfile(
+        name: namaController.text,
 
+        phone: phoneController.text,
 
+        email: emailController.text,
 
+        address: alamatController.text,
 
+        nik: nikController.text,
 
+        birthDate: birthDateController.text,
+
+        gender: gender,
+
+        beneficiaryType: beneficiaryType,
+
+        childName: childNameController.text,
+
+        childBirthDate: childBirthDateController.text,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile berhasil diperbarui")),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+
+    if (mounted) {
+      setState(() {
+        saving = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-
-
-
-    if(loading){
-
-
-      return const Scaffold(
-
-        body:
-
-        Center(
-
-          child:
-          CircularProgressIndicator(),
-
-        ),
-
-      );
-
-
+    if (loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-
-
-
-
     return Scaffold(
+      backgroundColor: Colors.white,
 
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
 
-      backgroundColor:
-      Colors.white,
-
-
-
-      body:
-
-      SafeArea(
-
-
-        child:
-
-        SingleChildScrollView(
-
-
-          padding:
-          const EdgeInsets.all(20),
-
-
-
-          child:
-
-          Column(
-
-
-
-            children:[
-
-
-
-
-
+          child: Column(
+            children: [
               Row(
-
-
-                children:[
-
-
-
+                children: [
                   IconButton(
-
-                    onPressed: (){
-
+                    onPressed: () {
                       Navigator.pop(context);
-
                     },
 
-
-                    icon:
-
-                    const Icon(
-
-                      Icons.arrow_back,
-
-                      color:
-
-                      Colors.blue,
-
-                    ),
-
+                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
                   ),
-
-
-
 
                   const Expanded(
-
-                    child:
-
-                    Text(
-
+                    child: Text(
                       "Edit Profile",
 
+                      textAlign: TextAlign.center,
 
-                      textAlign:
+                      style: TextStyle(
+                        fontSize: 20,
 
-                      TextAlign.center,
-
-
-                      style:
-
-                      TextStyle(
-
-                        fontSize:20,
-
-                        fontWeight:
-
-                        FontWeight.bold,
-
+                        fontWeight: FontWeight.bold,
                       ),
-
                     ),
-
                   ),
 
-
-
-
-
-                  const SizedBox(
-
-                    width:48,
-
-                  ),
-
-
-
+                  const SizedBox(width: 48),
                 ],
-
-
               ),
 
-
-
-
-
-              const SizedBox(
-
-                height:25,
-
-              ),
-
-
-
-
-
-
-
-              // ==========================
-              // FOTO PROFILE TERPISAH
-              // ==========================
-
+              const SizedBox(height: 25),
 
               Stack(
-
-
-                children:[
-
-
-
-
+                children: [
                   CircleAvatar(
+                    radius: 60,
 
-
-                    radius:60,
-
-
-
-                    backgroundImage:
-
-
-                    profileImage != null
-
-
-
-                    ? FileImage(
-
-                      profileImage!,
-
-                    )
-
-
-
-                    : photoUrl.isNotEmpty
-
-
-
-                    ? NetworkImage(
-
-                      photoUrl,
-
-                    )
-
-
-
-                    :
-
-                    const AssetImage(
-
-                      "assets/images/balita.png",
-
-                    )
-
-                    as ImageProvider,
-
-
-
+                    backgroundImage: profileImage != null
+                        ? FileImage(profileImage!)
+                        : photoUrl.isNotEmpty
+                        ? NetworkImage(photoUrl)
+                        : const AssetImage("assets/images/balita.png")
+                              as ImageProvider,
                   ),
-
-
-
-
 
                   Positioned(
+                    right: 0,
 
+                    bottom: 0,
 
+                    child: InkWell(
+                      onTap: uploadingPhoto ? null : pickPhoto,
 
-                    right:0,
+                      child: Container(
+                        width: 42,
 
+                        height: 42,
 
-                    bottom:0,
+                        decoration: const BoxDecoration(
+                          color: Colors.blue,
 
-
-
-                    child:
-
-                    InkWell(
-
-
-
-                      onTap:
-
-                      uploadingPhoto
-
-                      ? null
-
-                      : pickPhoto,
-
-
-
-
-                      child:
-
-                      Container(
-
-
-
-                        width:42,
-
-
-                        height:42,
-
-
-
-                        decoration:
-
-                        const BoxDecoration(
-
-
-                          color:
-
-                          Colors.blue,
-
-
-                          shape:
-
-                          BoxShape.circle,
-
-
+                          shape: BoxShape.circle,
                         ),
 
+                        child: uploadingPhoto
+                            ? const Padding(
+                                padding: EdgeInsets.all(10),
 
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
 
-
-
-                        child:
-
-                        uploadingPhoto
-
-
-
-                        ?
-
-                        const Padding(
-
-
-                          padding:
-
-                          EdgeInsets.all(10),
-
-
-
-                          child:
-
-                          CircularProgressIndicator(
-
-                            color:
-
-                            Colors.white,
-
-
-                            strokeWidth:
-
-                            2,
-
-                          ),
-
-
-                        )
-
-
-
-                        : const Icon(
-
-                          Icons.camera_alt,
-
-                          color:
-
-                          Colors.white,
-
-
-                        ),
-
-
-
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.camera_alt, color: Colors.white),
                       ),
-
-
-
                     ),
-
-
-
                   ),
-
-
-
                 ],
-
-
               ),
 
+              const SizedBox(height: 30),
 
-
-
-
-
-              const SizedBox(
-
-                height:30,
-
-              ),
-
-
-
-
-
+              _input("Nama Lengkap", Icons.person, namaController),
 
               _input(
-
-                "Nama Lengkap",
-
-                Icons.person,
-
-                namaController,
-
-              ),
-
-
-
-
-
-
-              _input(
-
                 "Nomor Telepon",
 
                 Icons.phone,
 
                 phoneController,
 
-
-                keyboard:
-
-                TextInputType.phone,
-
-
+                keyboard: TextInputType.phone,
               ),
 
-
-
-
-
-
               _input(
-
                 "Email",
 
                 Icons.email,
 
                 emailController,
 
-
-                keyboard:
-
-                TextInputType.emailAddress,
-
-
+                keyboard: TextInputType.emailAddress,
               ),
 
-
-
-
-
-
               _input(
-
                 "Alamat",
 
                 Icons.location_on,
 
                 alamatController,
 
-
-                maxLines:
-
-                3,
-
-
+                maxLines: 3,
               ),
 
-
-
-
-
-
               _input(
-
                 "NIK",
 
                 Icons.badge,
 
                 nikController,
 
-
-                keyboard:
-
-                TextInputType.number,
-
-
+                keyboard: TextInputType.number,
               ),
 
-
-
-
-
-
-             _buildDatePicker(),
-
-
-
-
-
-
-              const SizedBox(
-
-                height:10,
-
-              ),
-
-
-
-
-
+              _buildDatePicker(),
 
               DropdownButtonFormField<String>(
+                value: gender.isEmpty ? null : gender,
 
+                decoration: _dropdownDecoration("Jenis Kelamin", Icons.wc),
 
-
-                value:
-
-                gender.isEmpty
-
-                ? null
-
-                : gender,
-
-
-
-
-                decoration:
-
-                _dropdownDecoration(
-
-                  "Jenis Kelamin",
-
-                  Icons.wc,
-
-                ),
-
-
-
-
-
-                items:[
-
-
+                items: [
+                  
 
                   const DropdownMenuItem(
+                    value: "female",
 
-                    value:"male",
-
-                    child:
-
-                    Text(
-
-                      "Laki-laki",
-
-                    ),
-
+                    child: Text("Perempuan"),
                   ),
-
-
-
-
-
-                  const DropdownMenuItem(
-
-                    value:"female",
-
-                    child:
-
-                    Text(
-
-                      "Perempuan",
-
-                    ),
-
-                  ),
-
-
-
                 ],
 
-
-
-
-
-                onChanged:(value){
-
-
-
+                onChanged: (value) {
                   setState(() {
-
-
-                    gender =
-                    value ?? "";
-
+                    gender = value ?? "";
                   });
-
-
                 },
-
-
               ),
 
-
-
-
-
-
-              const SizedBox(
-
-                height:16,
-
-              ),
-
-
-
-
+              const SizedBox(height: 16),
 
               DropdownButtonFormField<String>(
+                value: beneficiaryType.isEmpty ? null : beneficiaryType,
 
-
-
-                value:
-
-                beneficiaryType.isEmpty
-
-                ? null
-
-                : beneficiaryType,
-
-
-
-
-                decoration:
-
-                _dropdownDecoration(
-
+                decoration: _dropdownDecoration(
                   "Status Penerima",
 
                   Icons.child_care,
-
                 ),
 
-
-
-
-
-                items:[
-
-
-
+                items: [
                   const DropdownMenuItem(
+                    value: "pregnant",
 
-                    value:"pregnant",
-
-                    child:
-
-                    Text(
-
-                      "Ibu Hamil",
-
-                    ),
-
+                    child: Text("Ibu Hamil"),
                   ),
 
-
-
-
-
                   const DropdownMenuItem(
+                    value: "toddler_parent",
 
-                    value:"toddler_parent",
-
-                    child:
-
-                    Text(
-
-                      "Orang Tua Balita",
-
-                    ),
-
+                    child: Text("Orang Tua Balita"),
                   ),
-
-
-
                 ],
 
-
-
-
-                onChanged:(value){
-
-
-
+                onChanged: (value) {
                   setState(() {
-
-
-                    beneficiaryType =
-
-                    value ?? "";
-
-
+                    beneficiaryType = value ?? "";
                   });
-
-
                 },
-
-
-
               ),
 
+              const SizedBox(height: 16),
 
+              if (beneficiaryType == "toddler_parent")
+                _input("Nama Anak", Icons.child_care, childNameController),
 
+              _buildChildDatePicker(),
 
-
-
-              const SizedBox(
-
-                height:30,
-
-              ),
-
-
-
-
-
+              const SizedBox(height: 30),
 
               SizedBox(
+                width: double.infinity,
 
+                height: 50,
 
+                child: ElevatedButton(
+                  onPressed: saving ? null : saveProfile,
 
-                width:
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
 
-                double.infinity,
+                    foregroundColor: Colors.white,
 
-
-
-                height:
-
-                50,
-
-
-
-
-
-                child:
-
-                ElevatedButton(
-
-
-
-                  onPressed:
-
-                  saving
-
-                  ? null
-
-                  :
-
-                  saveProfile,
-
-
-
-
-
-                  style:
-
-                  ElevatedButton.styleFrom(
-
-
-
-                    backgroundColor:
-
-                    Colors.blue,
-
-
-
-                    foregroundColor:
-
-                    Colors.white,
-
-
-
-
-                    shape:
-
-                    RoundedRectangleBorder(
-
-                      borderRadius:
-
-                      BorderRadius.circular(14),
-
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-
-
                   ),
 
-
-
-
-
-                  child:
-
-                  saving
-
-
-
-                  ?
-
-                  const CircularProgressIndicator(
-
-                    color:
-
-                    Colors.white,
-
-                  )
-
-
-
-                  :
-
-                  const Text(
-
-                    "Simpan Perubahan",
-
-                    style:
-
-                    TextStyle(
-
-                      fontSize:16,
-
-                      fontWeight:
-
-                      FontWeight.bold,
-
-                    ),
-
-                  ),
-
-
-
+                  child: saving
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Simpan Perubahan"),
                 ),
-
-
-
               ),
-
-
-
-
             ],
-
-
-
           ),
-
-
-
         ),
-
-
-
       ),
-
-
-
     );
-
-
   }
 
+  Widget _buildDatePicker() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
 
-Widget _buildDatePicker() {
+      child: TextField(
+        controller: birthDateController,
 
-  return Padding(
+        readOnly: true,
 
-    padding: const EdgeInsets.only(
-      bottom: 16,
-    ),
+        onTap: () async {
+          DateTime initialDate = DateTime.now();
 
+          if (birthDateController.text.isNotEmpty) {
+            try {
+              initialDate = DateTime.parse(birthDateController.text);
+            } catch (_) {}
+          }
 
-    child: TextField(
+          final DateTime? picked = await showDatePicker(
+            context: context,
 
+            initialDate: initialDate,
 
-      controller:
-      birthDateController,
+            firstDate: DateTime(1900),
 
+            lastDate: DateTime.now(),
+          );
 
-      readOnly:
-      true,
+          if (picked != null) {
+            setState(() {
+              birthDateController.text =
+                  "${picked.year}-"
+                  "${picked.month.toString().padLeft(2, '0')}-"
+                  "${picked.day.toString().padLeft(2, '0')}";
+            });
+          }
+        },
 
+        decoration: _dropdownDecoration("Tanggal Lahir", Icons.calendar_month),
+      ),
+    );
+  }
 
-      onTap:
-      () async {
+  Widget _buildChildDatePicker() {
+    if (beneficiaryType != "toddler_parent" && beneficiaryType != "pregnant") {
+      return const SizedBox();
+    }
 
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
 
-        DateTime initialDate =
-        DateTime.now();
+      child: TextField(
+        controller: childBirthDateController,
 
+        readOnly: true,
 
+        onTap: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
 
-        if (birthDateController.text.isNotEmpty) {
+            initialDate: DateTime.now(),
 
-          try {
+            firstDate: DateTime(1900),
 
-            initialDate =
-                DateTime.parse(
-                  birthDateController.text,
-                );
+            lastDate: DateTime.now(),
+          );
 
-          } catch (_) {}
+          if (picked != null) {
+            setState(() {
+              childBirthDateController.text =
+                  "${picked.year}-"
+                  "${picked.month.toString().padLeft(2, '0')}-"
+                  "${picked.day.toString().padLeft(2, '0')}";
+            });
+          }
+        },
 
-        }
+        decoration: _dropdownDecoration(
+          beneficiaryType == "pregnant"
+              ? "Tanggal Awal Kehamilan (HPHT)"
+              : "Tanggal Lahir Anak",
 
-
-
-
-        final DateTime? picked =
-        await showDatePicker(
-
-
-          context:
-          context,
-
-
-          initialDate:
-          initialDate,
-
-
-          firstDate:
-          DateTime(1900),
-
-
-          lastDate:
-          DateTime.now(),
-
-
-
-          builder:
-          (context, child) {
-
-
-            return Theme(
-
-
-              data:
-              Theme.of(context).copyWith(
-
-
-                colorScheme:
-                const ColorScheme.light(
-
-
-                  primary:
-                  Colors.blue,
-
-
-                ),
-
-
-              ),
-
-
-              child:
-              child!,
-
-
-            );
-
-
-          },
-
-
-        );
-
-
-
-
-
-        if (picked != null) {
-
-
-          setState(() {
-
-
-            birthDateController.text =
-
-            "${picked.year}-"
-                "${picked.month.toString().padLeft(2, '0')}-"
-                "${picked.day.toString().padLeft(2, '0')}";
-
-
-          });
-
-
-        }
-
-
-      },
-
-
-
-      decoration:
-      InputDecoration(
-
-
-        labelText:
-        "Tanggal Lahir",
-
-
-
-        prefixIcon:
-        const Icon(
           Icons.calendar_month,
         ),
-
-
-
-        filled:
-        true,
-
-
-
-        fillColor:
-        Colors.grey.shade100,
-
-
-
-        border:
-        OutlineInputBorder(
-
-
-
-          borderRadius:
-          BorderRadius.circular(14),
-
-
-
-          borderSide:
-          BorderSide.none,
-
-
-
-        ),
-
-
-
       ),
+    );
+  }
 
-
-
-    ),
-
-
-  );
-
-
-}
-
-  
   Widget _input(
-
     String label,
 
     IconData icon,
@@ -1562,191 +537,51 @@ Widget _buildDatePicker() {
     int maxLines = 1,
 
     TextInputType? keyboard,
-
   }) {
-
-
     return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
 
-      padding:
+      child: TextField(
+        controller: controller,
 
-      const EdgeInsets.only(
+        maxLines: maxLines,
 
-        bottom:16,
+        keyboardType: keyboard,
 
-      ),
+        decoration: InputDecoration(
+          labelText: label,
 
+          prefixIcon: Icon(icon),
 
+          filled: true,
 
-      child:
+          fillColor: Colors.grey.shade100,
 
-      TextField(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
 
-
-
-        controller:
-
-        controller,
-
-
-
-        maxLines:
-
-        maxLines,
-
-
-
-        keyboardType:
-
-        keyboard,
-
-
-
-
-        decoration:
-
-        InputDecoration(
-
-
-
-          labelText:
-
-          label,
-
-
-
-          prefixIcon:
-
-          Icon(icon),
-
-
-
-
-          filled:
-
-          true,
-
-
-
-          fillColor:
-
-          Colors.grey.shade100,
-
-
-
-
-          border:
-
-          OutlineInputBorder(
-
-
-
-            borderRadius:
-
-            BorderRadius.circular(14),
-
-
-
-
-            borderSide:
-
-            BorderSide.none,
-
-
-
+            borderSide: BorderSide.none,
           ),
-
-
-
         ),
-
-
-
       ),
-
-
-
     );
-
-
   }
 
-
-
-
-
-
-
-
-
-  InputDecoration _dropdownDecoration(
-
-    String label,
-
-    IconData icon,
-
-  ){
-
-
-
+  InputDecoration _dropdownDecoration(String label, IconData icon) {
     return InputDecoration(
+      labelText: label,
 
+      prefixIcon: Icon(icon),
 
+      filled: true,
 
-      labelText:
+      fillColor: Colors.grey.shade100,
 
-      label,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
 
-
-
-      prefixIcon:
-
-      Icon(icon),
-
-
-
-
-      filled:
-
-      true,
-
-
-
-      fillColor:
-
-      Colors.grey.shade100,
-
-
-
-
-      border:
-
-      OutlineInputBorder(
-
-
-
-        borderRadius:
-
-        BorderRadius.circular(14),
-
-
-
-        borderSide:
-
-        BorderSide.none,
-
-
-
+        borderSide: BorderSide.none,
       ),
-
-
-
     );
-
-
-
   }
-
-
-
 }

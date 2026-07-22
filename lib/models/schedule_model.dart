@@ -43,25 +43,25 @@ class ScheduleModel {
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) {
     return ScheduleModel(
-      id: json['id'] ?? 0,
+      id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
 
-      type: (json['type'] ?? '').toString().toLowerCase(),
+      type: json['type']?.toString().toLowerCase() ?? '',
 
-      date: json['date'] ?? '',
+      date: json['date']?.toString() ?? '',
 
-      title: json['title'] ?? '',
+      title: json['title']?.toString() ?? '',
 
-      startTime: json['start_time'],
+      startTime: json['start_time']?.toString(),
 
-      endTime: json['end_time'],
+      endTime: json['end_time']?.toString(),
 
-      location: json['location'],
+      location: json['location']?.toString(),
 
-      address: json['address'],
+      address: json['address']?.toString(),
 
-      image: json['image'],
+      image: json['image']?.toString() ?? json['image_url']?.toString(),
 
-      description: json['description'],
+      description: json['description']?.toString(),
     );
   }
 
@@ -107,7 +107,11 @@ class ScheduleModel {
   // =========================
 
   DateTime get dateObject {
-    return DateTime.parse(date);
+    try {
+      return DateTime.parse(date);
+    } catch (e) {
+      return DateTime.now();
+    }
   }
 
   String get tanggal {
@@ -117,16 +121,27 @@ class ScheduleModel {
   String get bulan {
     const list = [
       "JAN",
+
       "FEB",
+
       "MAR",
+
       "APR",
+
       "MEI",
+
       "JUN",
+
       "JUL",
+
       "AGU",
+
       "SEP",
+
       "OKT",
+
       "NOV",
+
       "DES",
     ];
 
@@ -146,7 +161,9 @@ class ScheduleModel {
 
     final scheduleDate = DateTime(
       dateObject.year,
+
       dateObject.month,
+
       dateObject.day,
     );
 

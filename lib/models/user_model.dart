@@ -88,6 +88,14 @@ class ProfileModel {
 
   final String? photo;
 
+  // tambahan
+  final String? childName;
+
+  final String? childBirthDate;
+
+  // hasil perhitungan backend
+  final String? ageInformation;
+
   ProfileModel({
     required this.id,
 
@@ -102,6 +110,12 @@ class ProfileModel {
     this.nik,
 
     this.photo,
+
+    this.childName,
+
+    this.childBirthDate,
+
+    this.ageInformation,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -119,6 +133,12 @@ class ProfileModel {
       nik: json['nik'],
 
       photo: json['photo'],
+
+      childName: json['child_name'],
+
+      childBirthDate: json['child_birth_date'],
+
+      ageInformation: json['age_information'],
     );
   }
 
@@ -137,6 +157,12 @@ class ProfileModel {
       'nik': nik,
 
       'photo': photo,
+
+      'child_name': childName,
+
+      'child_birth_date': childBirthDate,
+
+      'age_information': ageInformation,
     };
   }
 }

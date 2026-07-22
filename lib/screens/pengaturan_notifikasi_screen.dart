@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/storage/notification_storage.dart';
+
 class PengaturanNotifikasiScreen extends StatefulWidget {
   const PengaturanNotifikasiScreen({super.key});
 
@@ -10,17 +12,60 @@ class PengaturanNotifikasiScreen extends StatefulWidget {
 
 class _PengaturanNotifikasiScreenState
     extends State<PengaturanNotifikasiScreen> {
-  bool penerimaan = true;
-  bool penilaian = true;
-  bool informasi = true;
   bool suara = true;
+
   bool getar = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    loadSetting();
+  }
+
+  Future<void> loadSetting() async {
+    final suaraValue = await NotificationStorage.get(
+      NotificationStorage.suara,
+      defaultValue: true,
+    );
+
+    final getarValue = await NotificationStorage.get(
+      NotificationStorage.getar,
+      defaultValue: false,
+    );
+
+    setState(() {
+      suara = suaraValue;
+
+      getar = getarValue;
+    });
+  }
+
+  Future<void> updateSuara(bool value) async {
+    setState(() {
+      suara = value;
+    });
+
+    await NotificationStorage.save(NotificationStorage.suara, value);
+  }
+
+  Future<void> updateGetar(bool value) async {
+    setState(() {
+      getar = value;
+    });
+
+    await NotificationStorage.save(NotificationStorage.getar, value);
+  }
 
   Widget buildSwitchItem({
     required IconData icon,
+
     required String title,
+
     required String subtitle,
+
     required bool value,
+
     required Function(bool) onChanged,
   }) {
     return Container(
@@ -63,7 +108,7 @@ class _PengaturanNotifikasiScreenState
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
 
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
 
                 Text(
                   subtitle,
@@ -74,7 +119,7 @@ class _PengaturanNotifikasiScreenState
             ),
           ),
 
-         Switch(
+          Switch(
             value: value,
 
             thumbColor: WidgetStateProperty.all(Colors.white),
@@ -122,6 +167,7 @@ class _PengaturanNotifikasiScreenState
 
                       style: TextStyle(
                         fontSize: 18,
+
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -137,62 +183,11 @@ class _PengaturanNotifikasiScreenState
                 child: ListView(
                   children: [
                     const Text(
-                      "Notifikasi",
-
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    buildSwitchItem(
-                      icon: Icons.restaurant,
-                      title: "Penerimaan MBG",
-                      subtitle: "Notifikasi jadwal dan penerimaan MBG",
-                      value: penerimaan,
-
-                      onChanged: (v) {
-                        setState(() {
-                          penerimaan = v;
-                        });
-                      },
-                    ),
-
-                    buildSwitchItem(
-                      icon: Icons.star,
-                      title: "Pengingat Penilaian",
-                      subtitle: "Pengingat untuk memberikan penilaian",
-                      value: penilaian,
-
-                      onChanged: (v) {
-                        setState(() {
-                          penilaian = v;
-                        });
-                      },
-                    ),
-
-                    buildSwitchItem(
-                      icon: Icons.campaign,
-                      title: "Informasi",
-                      subtitle: "Pengumuman dan informasi terbaru",
-                      value: informasi,
-
-                      onChanged: (v) {
-                        setState(() {
-                          informasi = v;
-                        });
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
                       "Preferensi",
 
                       style: TextStyle(
                         fontSize: 16,
+
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -201,28 +196,26 @@ class _PengaturanNotifikasiScreenState
 
                     buildSwitchItem(
                       icon: Icons.volume_up,
+
                       title: "Suara",
-                      subtitle: "Aktifkan suara notifikasi",
+
+                      subtitle: "Aktifkan suara aplikasi",
+
                       value: suara,
 
-                      onChanged: (v) {
-                        setState(() {
-                          suara = v;
-                        });
-                      },
+                      onChanged: updateSuara,
                     ),
 
                     buildSwitchItem(
                       icon: Icons.vibration,
+
                       title: "Getar",
-                      subtitle: "Aktifkan getaran notifikasi",
+
+                      subtitle: "Aktifkan getaran aplikasi",
+
                       value: getar,
 
-                      onChanged: (v) {
-                        setState(() {
-                          getar = v;
-                        });
-                      },
+                      onChanged: updateGetar,
                     ),
                   ],
                 ),

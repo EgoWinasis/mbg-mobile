@@ -12,6 +12,7 @@ import '../services/distribution_service.dart';
 import '../services/confirmation_service.dart';
 
 
+
 class RiwayatMBGScreen extends StatefulWidget {
 
   const RiwayatMBGScreen({
@@ -27,12 +28,16 @@ class RiwayatMBGScreen extends StatefulWidget {
 
 
 
+
+
 class _RiwayatMBGScreenState
     extends State<RiwayatMBGScreen> {
 
 
+
   final ConfirmationService _confirmationService =
       ConfirmationService();
+
 
 
   final DistributionService _distributionService =
@@ -40,13 +45,25 @@ class _RiwayatMBGScreenState
 
 
 
+
   DistributionModel? distribution;
+
+
 
 
   bool loading = true;
 
 
   bool _isSubmitting = false;
+
+
+
+  bool alreadySubmitted = false;
+
+
+
+  bool noDistribution = false;
+
 
 
 
@@ -63,6 +80,16 @@ class _RiwayatMBGScreenState
 
 
 
+  double? latitude;
+
+
+  double? longitude;
+
+
+
+
+
+
   @override
   void initState() {
 
@@ -71,6 +98,8 @@ class _RiwayatMBGScreenState
     _loadDistribution();
 
   }
+
+
 
 
 
@@ -88,6 +117,9 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
   Future<void> _loadDistribution() async {
 
     try {
@@ -97,22 +129,112 @@ class _RiwayatMBGScreenState
           await _distributionService.getToday();
 
 
-      if (!mounted) return;
+
+
+      if(!mounted) return;
+
+
+
+
+
+      if(result == null){
+
+
+        setState(() {
+
+          noDistribution = true;
+
+          loading = false;
+
+        });
+
+
+        return;
+
+      }
+
+
+
+
+
+      final confirmation =
+          await _confirmationService
+              .getLatestConfirmation();
+
+
+
+
+
+      if(!mounted) return;
+
+
+
+
 
 
       setState(() {
+
 
         distribution = result;
 
+
+
+        alreadySubmitted =
+            confirmation != null &&
+            confirmation.distributionId == result.id;
+
+
+
         loading = false;
+
+
 
       });
 
 
-    } catch(e) {
 
 
-      if (!mounted) return;
+    }catch(e){
+
+
+
+      if(!mounted)return;
+
+
+
+
+      final error =
+          e.toString().toLowerCase();
+
+
+
+
+      if(
+        error.contains("404") ||
+        error.contains("not found") ||
+        error.contains("tidak ada") ||
+        error.contains("belum")
+      ){
+
+
+
+        setState(() {
+
+          noDistribution = true;
+
+          loading = false;
+
+        });
+
+
+
+        return;
+
+      }
+
+
+
+
 
 
       setState(() {
@@ -120,13 +242,21 @@ class _RiwayatMBGScreenState
         loading = false;
 
       });
+
+
+
 
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         SnackBar(
-          content: Text(e.toString()),
+
+          content:
+          Text(
+            e.toString(),
+          ),
+
         ),
 
       );
@@ -134,7 +264,247 @@ class _RiwayatMBGScreenState
 
     }
 
+
   }
+
+
+
+
+
+
+
+
+
+  Widget _statusCard({
+
+    required IconData icon,
+
+    required Color color,
+
+    required String title,
+
+    required String message,
+
+  }){
+
+
+    return Container(
+
+      margin:
+      const EdgeInsets.all(16),
+
+
+
+      padding:
+      const EdgeInsets.all(20),
+
+
+
+
+      decoration:
+
+      BoxDecoration(
+
+        color:
+        color.withOpacity(0.08),
+
+
+
+        borderRadius:
+        BorderRadius.circular(18),
+
+
+
+        border:
+
+        Border.all(
+
+          color:
+          color.withOpacity(0.3),
+
+        ),
+
+
+      ),
+
+
+
+
+      child:
+
+      Column(
+
+        children: [
+
+
+
+          Icon(
+
+            icon,
+
+            size:60,
+
+            color:color,
+
+          ),
+
+
+
+
+
+          const SizedBox(
+            height:16,
+          ),
+
+
+
+
+
+
+          Text(
+
+            title,
+
+
+            textAlign:
+            TextAlign.center,
+
+
+            style:
+
+            const TextStyle(
+
+              fontSize:18,
+
+              fontWeight:
+              FontWeight.bold,
+
+            ),
+
+
+          ),
+
+
+
+
+
+          const SizedBox(
+            height:10,
+          ),
+
+
+
+
+
+          Text(
+
+            message,
+
+
+            textAlign:
+            TextAlign.center,
+
+
+
+            style:
+
+            TextStyle(
+
+              color:
+              Colors.grey.shade700,
+
+              fontSize:14,
+
+            ),
+
+
+          ),
+
+
+
+
+
+          const SizedBox(
+            height:20,
+          ),
+
+
+
+
+
+          SizedBox(
+
+            width:
+            double.infinity,
+
+
+
+            child:
+
+            ElevatedButton(
+
+              onPressed:(){
+
+                Navigator.pop(context);
+
+              },
+
+
+
+              style:
+
+              ElevatedButton.styleFrom(
+
+                backgroundColor:
+                color,
+
+                foregroundColor:
+                Colors.white,
+
+
+                shape:
+
+                RoundedRectangleBorder(
+
+                  borderRadius:
+                  BorderRadius.circular(12),
+
+                ),
+
+
+              ),
+
+
+
+
+              child:
+
+              const Text(
+                "Kembali",
+              ),
+
+
+            ),
+
+
+          ),
+
+
+
+        ],
+
+
+      ),
+
+
+    );
+
+
+  }
+
+
+
+
 
 
 
@@ -142,31 +512,25 @@ class _RiwayatMBGScreenState
 
   String get tanggalPenerimaan {
 
+
     return DateTime.now()
         .toString()
         .substring(0,10);
 
+
   }
 
-
-
-
-
   Widget _buildStar(int index) {
-
 
     return IconButton(
 
       onPressed: () {
 
-
         setState(() {
 
-          _rating =
-              index.toDouble();
+          _rating = index.toDouble();
 
         });
-
 
       },
 
@@ -190,15 +554,15 @@ class _RiwayatMBGScreenState
 
     );
 
-
   }
 
 
 
 
 
-  Future<void> _pickImage() async {
 
+
+  Future<void> _pickImage() async {
 
     try {
 
@@ -208,14 +572,18 @@ class _RiwayatMBGScreenState
 
 
 
+
       final image =
           await picker.pickImage(
 
-        source: ImageSource.camera,
+        source:
+        ImageSource.camera,
 
-        imageQuality:95,
+        imageQuality:
+        95,
 
       );
+
 
 
 
@@ -225,9 +593,10 @@ class _RiwayatMBGScreenState
 
 
 
-      bool gps =
-          await Geolocator
-              .isLocationServiceEnabled();
+
+      final gps =
+          await Geolocator.isLocationServiceEnabled();
+
 
 
 
@@ -238,8 +607,12 @@ class _RiwayatMBGScreenState
             .showSnackBar(
 
           const SnackBar(
+
             content:
-            Text("Aktifkan GPS terlebih dahulu"),
+            Text(
+              "Aktifkan GPS terlebih dahulu",
+            ),
+
           ),
 
         );
@@ -253,8 +626,11 @@ class _RiwayatMBGScreenState
 
 
 
+
+
       LocationPermission permission =
           await Geolocator.checkPermission();
+
 
 
 
@@ -272,8 +648,24 @@ class _RiwayatMBGScreenState
 
 
 
+
       if(permission ==
           LocationPermission.deniedForever){
+
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+
+          const SnackBar(
+
+            content:
+            Text(
+              "Izinkan akses lokasi terlebih dahulu",
+            ),
+
+          ),
+
+        );
 
 
         return;
@@ -284,7 +676,10 @@ class _RiwayatMBGScreenState
 
 
 
-      Position posisi =
+
+
+
+      final posisi =
           await Geolocator.getCurrentPosition(
 
         desiredAccuracy:
@@ -296,9 +691,25 @@ class _RiwayatMBGScreenState
 
 
 
+      latitude =
+          posisi.latitude;
+
+
+
+      longitude =
+          posisi.longitude;
+
+
+
+
+
+
+
       final bytes =
           await File(image.path)
               .readAsBytes();
+
+
 
 
 
@@ -307,7 +718,11 @@ class _RiwayatMBGScreenState
 
 
 
+
+
       if(foto == null) return;
+
+
 
 
 
@@ -318,10 +733,13 @@ class _RiwayatMBGScreenState
 
 
 
-      String waktu =
+
+
+      final waktu =
           DateTime.now()
               .toString()
               .substring(0,19);
+
 
 
 
@@ -342,7 +760,6 @@ class _RiwayatMBGScreenState
         y2:
         foto.height,
 
-
         color:
         img.ColorRgba8(
           0,
@@ -357,34 +774,44 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
       img.drawString(
 
         foto,
 
 
         "SPPM MBG\n"
-            "$waktu\n"
-            "Lat:${posisi.latitude}\n"
-            "Lng:${posisi.longitude}",
+        "$waktu\n"
+        "Lat:$latitude\n"
+        "Lng:$longitude",
+
+
 
 
         font:
         img.arial48,
 
 
+
         x:40,
+
 
 
         y:
         foto.height - 230,
 
 
+
         color:
+
         img.ColorRgb8(
           255,
           255,
           0,
         ),
+
 
       );
 
@@ -392,8 +819,13 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
       final directory =
           await getTemporaryDirectory();
+
+
 
 
 
@@ -406,11 +838,16 @@ class _RiwayatMBGScreenState
 
 
 
+
+
       await file.writeAsBytes(
 
         img.encodeJpg(
+
           foto,
+
           quality:95,
+
         ),
 
       );
@@ -418,26 +855,37 @@ class _RiwayatMBGScreenState
 
 
 
-      if(!mounted) return;
+
+
+      if(!mounted)return;
+
+
+
 
 
       setState(() {
 
-        _photo=file;
+        _photo = file;
 
       });
+
 
 
 
     }catch(e){
 
 
+
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         SnackBar(
+
           content:
-          Text(e.toString()),
+          Text(
+            e.toString(),
+          ),
+
         ),
 
       );
@@ -447,6 +895,9 @@ class _RiwayatMBGScreenState
 
 
   }
+
+
+
 
 
 
@@ -457,7 +908,7 @@ class _RiwayatMBGScreenState
 
     setState(() {
 
-      _photo=null;
+      _photo = null;
 
     });
 
@@ -468,17 +919,27 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
+
   Future<void> _submit() async {
 
 
-    if(_rating==0){
+
+    if(alreadySubmitted){
+
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         const SnackBar(
+
           content:
-          Text("Silakan beri rating"),
+          Text(
+            "Anda sudah mengisi penilaian hari ini",
+          ),
+
         ),
 
       );
@@ -491,15 +952,21 @@ class _RiwayatMBGScreenState
 
 
 
-    if(_photo==null){
+
+
+    if(distribution == null){
 
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         const SnackBar(
+
           content:
-          Text("Silakan ambil foto bukti"),
+          Text(
+            "Tidak ada penerimaan MBG hari ini",
+          ),
+
         ),
 
       );
@@ -512,14 +979,22 @@ class _RiwayatMBGScreenState
 
 
 
-    if(distribution==null){
+
+
+
+    if(_rating == 0){
+
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         const SnackBar(
+
           content:
-          Text("Distribusi belum tersedia"),
+          Text(
+            "Silakan beri rating terlebih dahulu",
+          ),
+
         ),
 
       );
@@ -528,6 +1003,36 @@ class _RiwayatMBGScreenState
       return;
 
     }
+
+
+
+
+
+
+    if(_photo == null){
+
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content:
+          Text(
+            "Silakan ambil foto bukti",
+          ),
+
+        ),
+
+      );
+
+
+      return;
+
+    }
+
+
+
 
 
 
@@ -537,37 +1042,52 @@ class _RiwayatMBGScreenState
 
       setState(() {
 
-        _isSubmitting=true;
+        _isSubmitting = true;
 
       });
 
 
 
 
+
+
+
+
       await _confirmationService.sendConfirmation(
+
 
         distributionId:
         distribution!.id,
+
 
 
         rating:
         _rating.toInt(),
 
 
+
         kritik:
         _kritikController.text,
+
 
 
         photo:
         _photo!,
 
 
-        latitude:0,
+
+        latitude:
+        latitude ?? 0,
 
 
-        longitude:0,
+
+        longitude:
+        longitude ?? 0,
 
       );
+
+
+
 
 
 
@@ -576,15 +1096,26 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
+
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         const SnackBar(
+
           content:
-          Text("Verifikasi berhasil dikirim"),
+          Text(
+            "Penilaian berhasil dikirim",
+          ),
+
         ),
 
       );
+
+
+
 
 
 
@@ -592,30 +1123,42 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
     }catch(e){
+
 
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         SnackBar(
+
           content:
-          Text(e.toString()),
+          Text(
+            e.toString(),
+          ),
+
         ),
 
       );
 
 
+
     }finally{
+
 
 
       if(mounted){
 
+
         setState(() {
 
-          _isSubmitting=false;
+          _isSubmitting = false;
 
         });
+
 
       }
 
@@ -625,16 +1168,18 @@ class _RiwayatMBGScreenState
 
   }
 
-
     @override
   Widget build(BuildContext context) {
 
 
-    if (loading) {
+    if(loading){
+
 
       return const Scaffold(
 
-        body: Center(
+        body:
+
+        Center(
 
           child:
           CircularProgressIndicator(),
@@ -647,7 +1192,148 @@ class _RiwayatMBGScreenState
 
 
 
+
+
+
+    if(noDistribution){
+
+
+      return Scaffold(
+
+        backgroundColor:
+        Colors.white,
+
+
+        body:
+
+        SafeArea(
+
+          child:
+
+          Column(
+
+            children: [
+
+
+              const SizedBox(
+                height:40,
+              ),
+
+
+
+              _statusCard(
+
+                icon:
+                Icons.restaurant_outlined,
+
+
+                color:
+                Colors.orange,
+
+
+
+                title:
+                "Belum Ada Penerimaan MBG",
+
+
+
+                message:
+                "Belum ada distribusi MBG hari ini. Penilaian hanya dapat dilakukan setelah menerima makanan.",
+
+              ),
+
+
+            ],
+
+
+          ),
+
+        ),
+
+      );
+
+
+    }
+
+
+
+
+
+
+
+    if(alreadySubmitted){
+
+
+
+      return Scaffold(
+
+        backgroundColor:
+        Colors.white,
+
+
+        body:
+
+        SafeArea(
+
+          child:
+
+          Column(
+
+            children: [
+
+
+              const SizedBox(
+                height:40,
+              ),
+
+
+
+              _statusCard(
+
+                icon:
+                Icons.check_circle_outline,
+
+
+
+                color:
+                Colors.green,
+
+
+
+                title:
+                "Penilaian Sudah Dikirim",
+
+
+
+                message:
+                "Anda sudah memberikan penilaian MBG hari ini. Penilaian berikutnya dapat dilakukan setelah penerimaan berikutnya.",
+
+
+              ),
+
+
+
+            ],
+
+
+          ),
+
+
+        ),
+
+
+      );
+
+
+    }
+
+
+
+
+
+
     return Scaffold(
+
 
       backgroundColor:
       Colors.white,
@@ -658,9 +1344,11 @@ class _RiwayatMBGScreenState
 
       SafeArea(
 
+
         child:
 
         ListView(
+
 
           padding:
           const EdgeInsets.all(16),
@@ -670,14 +1358,19 @@ class _RiwayatMBGScreenState
           children: [
 
 
+
+
+
             Row(
+
 
               children: [
 
 
+
                 IconButton(
 
-                  onPressed: () {
+                  onPressed:(){
 
                     Navigator.pop(context);
 
@@ -690,13 +1383,15 @@ class _RiwayatMBGScreenState
 
                     Icons.arrow_back,
 
-                    color: Colors.blue,
+                    color:
+                    Colors.blue,
 
                     size:30,
 
                   ),
 
                 ),
+
 
 
 
@@ -708,7 +1403,6 @@ class _RiwayatMBGScreenState
                   Text(
 
                     "Penilaian MBG",
-
 
                     textAlign:
                     TextAlign.center,
@@ -725,9 +1419,13 @@ class _RiwayatMBGScreenState
 
                     ),
 
+
                   ),
 
+
                 ),
+
+
 
 
 
@@ -736,9 +1434,12 @@ class _RiwayatMBGScreenState
                 ),
 
 
+
               ],
 
+
             ),
+
 
 
 
@@ -755,8 +1456,10 @@ class _RiwayatMBGScreenState
 
             Container(
 
+
               padding:
               const EdgeInsets.all(14),
+
 
 
               decoration:
@@ -771,14 +1474,19 @@ class _RiwayatMBGScreenState
                 BorderRadius.circular(12),
 
 
+
                 border:
 
                 Border.all(
+
                   color:
                   Colors.blue.shade200,
+
                 ),
 
+
               ),
+
 
 
 
@@ -789,10 +1497,16 @@ class _RiwayatMBGScreenState
                 children: [
 
 
+
                   const Icon(
+
                     Icons.calendar_month,
-                    color: Colors.blue,
+
+                    color:
+                    Colors.blue,
+
                   ),
+
 
 
                   const SizedBox(
@@ -801,10 +1515,11 @@ class _RiwayatMBGScreenState
 
 
 
+
+
                   Text(
 
-                    "Tanggal Penerimaan: "
-                        "$tanggalPenerimaan",
+                    "Tanggal Penerimaan: $tanggalPenerimaan",
 
 
 
@@ -820,11 +1535,15 @@ class _RiwayatMBGScreenState
                   ),
 
 
+
                 ],
+
 
               ),
 
+
             ),
+
 
 
 
@@ -834,6 +1553,8 @@ class _RiwayatMBGScreenState
             const SizedBox(
               height:20,
             ),
+
+
 
 
 
@@ -856,8 +1577,10 @@ class _RiwayatMBGScreenState
                 border:
 
                 Border.all(
+
                   color:
                   Colors.blue.shade200,
+
                 ),
 
               ),
@@ -873,6 +1596,7 @@ class _RiwayatMBGScreenState
 
 
                 children: [
+
 
 
                   const Text(
@@ -912,20 +1636,25 @@ class _RiwayatMBGScreenState
 
                         5,
 
-                            (index)=>
+                        (index)=>
 
                             _buildStar(index+1),
 
+
                       ),
 
+
                     ),
+
 
                   ),
 
 
                 ],
 
+
               ),
+
 
             ),
 
@@ -943,10 +1672,12 @@ class _RiwayatMBGScreenState
 
 
 
+
             Container(
 
               padding:
               const EdgeInsets.all(14),
+
 
 
               decoration:
@@ -960,11 +1691,14 @@ class _RiwayatMBGScreenState
                 border:
 
                 Border.all(
+
                   color:
                   Colors.blue.shade200,
+
                 ),
 
               ),
+
 
 
 
@@ -977,6 +1711,7 @@ class _RiwayatMBGScreenState
 
 
                 children: [
+
 
 
                   const Text(
@@ -999,9 +1734,11 @@ class _RiwayatMBGScreenState
 
 
 
+
                   const SizedBox(
                     height:10,
                   ),
+
 
 
 
@@ -1011,7 +1748,8 @@ class _RiwayatMBGScreenState
                     _kritikController,
 
 
-                    maxLines:4,
+                    maxLines:
+                    4,
 
 
 
@@ -1023,7 +1761,8 @@ class _RiwayatMBGScreenState
                       "Tulis kritik dan saran...",
 
 
-                      filled:true,
+                      filled:
+                      true,
 
 
                       fillColor:
@@ -1046,14 +1785,19 @@ class _RiwayatMBGScreenState
 
                     ),
 
+
                   ),
+
 
 
                 ],
 
+
               ),
 
+
             ),
+
 
 
 
@@ -1063,6 +1807,7 @@ class _RiwayatMBGScreenState
             const SizedBox(
               height:20,
             ),
+
 
 
 
@@ -1085,8 +1830,10 @@ class _RiwayatMBGScreenState
                 border:
 
                 Border.all(
+
                   color:
                   Colors.blue.shade200,
+
                 ),
 
               ),
@@ -1102,6 +1849,7 @@ class _RiwayatMBGScreenState
 
 
                 children: [
+
 
 
                   const Text(
@@ -1121,6 +1869,8 @@ class _RiwayatMBGScreenState
                     ),
 
                   ),
+
+
 
 
 
@@ -1144,6 +1894,7 @@ class _RiwayatMBGScreenState
                     Container(
 
                       height:300,
+
 
                       width:
                       double.infinity,
@@ -1181,15 +1932,18 @@ class _RiwayatMBGScreenState
                         children: [
 
 
+
                           Icon(
 
                             Icons.camera_alt,
 
                             size:60,
 
-                            color:Colors.blue,
+                            color:
+                            Colors.blue,
 
                           ),
+
 
 
 
@@ -1199,22 +1953,26 @@ class _RiwayatMBGScreenState
 
 
 
+
                           Text(
                             "Ambil foto bukti",
                           ),
 
+
+
                         ],
+
 
                       )
 
 
-
                           :
+
+
 
                       GestureDetector(
 
-                        onTap: () {
-
+                        onTap:(){
 
                           Navigator.push(
 
@@ -1232,7 +1990,9 @@ class _RiwayatMBGScreenState
 
                                   ),
 
+
                             ),
+
 
                           );
 
@@ -1265,43 +2025,11 @@ class _RiwayatMBGScreenState
                             double.infinity,
 
 
-
-                            frameBuilder:
-
-                                (
-                                context,
-                                child,
-                                frame,
-                                sync,
-                                )
-
-                            {
-
-
-                              if(frame != null ||
-                                  sync){
-
-                                return child;
-
-                              }
-
-
-
-                              return const Center(
-
-                                child:
-
-                                CircularProgressIndicator(),
-
-                              );
-
-
-                            },
-
                           ),
 
 
                         ),
+
 
                       ),
 
@@ -1310,7 +2038,6 @@ class _RiwayatMBGScreenState
 
 
                   ),
-
 
 
 
@@ -1325,6 +2052,7 @@ class _RiwayatMBGScreenState
 
 
                       children: [
+
 
 
                         ElevatedButton.icon(
@@ -1347,8 +2075,8 @@ class _RiwayatMBGScreenState
                             "Retake",
                           ),
 
-                        ),
 
+                        ),
 
 
 
@@ -1393,10 +2121,13 @@ class _RiwayatMBGScreenState
                           ),
 
 
+
                         ),
 
 
+
                       ],
+
 
                     ),
 
@@ -1404,7 +2135,9 @@ class _RiwayatMBGScreenState
 
                 ],
 
+
               ),
+
 
             ),
 
@@ -1416,6 +2149,7 @@ class _RiwayatMBGScreenState
             const SizedBox(
               height:25,
             ),
+
 
 
 
@@ -1449,10 +2183,6 @@ class _RiwayatMBGScreenState
                   Colors.blue,
 
 
-                  disabledBackgroundColor:
-                  Colors.blue.shade300,
-
-
                   foregroundColor:
                   Colors.white,
 
@@ -1470,7 +2200,6 @@ class _RiwayatMBGScreenState
 
 
 
-
                 child:
 
                 _isSubmitting
@@ -1478,27 +2207,12 @@ class _RiwayatMBGScreenState
 
                     ?
 
-                const SizedBox(
+                const CircularProgressIndicator(
 
-                  width:25,
-
-                  height:25,
-
-
-                  child:
-
-                  CircularProgressIndicator(
-
-                    color:
-                    Colors.white,
-
-
-                    strokeWidth:3,
-
-                  ),
+                  color:
+                  Colors.white,
 
                 )
-
 
 
                     :
@@ -1506,7 +2220,6 @@ class _RiwayatMBGScreenState
                 const Text(
 
                   "Simpan",
-
 
                   style:
 
@@ -1522,7 +2235,9 @@ class _RiwayatMBGScreenState
                 ),
 
 
+
               ),
+
 
             ),
 
@@ -1530,9 +2245,12 @@ class _RiwayatMBGScreenState
 
           ],
 
+
         ),
 
+
       ),
+
 
     );
 
@@ -1559,7 +2277,6 @@ class FullImagePreview extends StatelessWidget {
     required this.image,
 
   });
-
 
 
 
@@ -1596,7 +2313,6 @@ class FullImagePreview extends StatelessWidget {
 
 
 
-
       body:
 
       Center(
@@ -1605,9 +2321,12 @@ class FullImagePreview extends StatelessWidget {
 
         InteractiveViewer(
 
-          minScale:0.5,
+          minScale:
+          0.5,
 
-          maxScale:5,
+
+          maxScale:
+          5,
 
 
 
@@ -1617,53 +2336,14 @@ class FullImagePreview extends StatelessWidget {
 
             image,
 
-
             fit:
             BoxFit.contain,
-
-
-
-            frameBuilder:
-
-                (
-                context,
-                child,
-                frame,
-                sync,
-                )
-
-            {
-
-
-              if(frame != null ||
-                  sync){
-
-                return child;
-
-              }
-
-
-
-              return const Center(
-
-                child:
-
-                CircularProgressIndicator(
-
-                  color:
-                  Colors.white,
-
-                ),
-
-              );
-
-
-            },
 
           ),
 
 
         ),
+
 
       ),
 

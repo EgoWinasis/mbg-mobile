@@ -11,7 +11,7 @@ class ConfirmationService {
   final Dio _dio = Dio();
 
   // ============================================
-  // CEK SUDAH VERIFIKASI
+  // CEK VERIFIKASI TERAKHIR
   // ============================================
 
   Future<ConfirmationModel?> getLatestConfirmation() async {
@@ -42,6 +42,14 @@ class ConfirmationService {
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? e.message);
     }
+  }
+
+  // ============================================
+  // CEK SUDAH MENGISI HARI INI
+  // ============================================
+
+  Future<ConfirmationModel?> getTodayConfirmation() async {
+    return await getLatestConfirmation();
   }
 
   // ============================================
@@ -101,6 +109,81 @@ class ConfirmationService {
           },
         ),
       );
+
+      return ConfirmationModel.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message);
+    }
+  }
+
+  // ============================================
+  // RIWAYAT VERIFIKASI
+  // ============================================
+
+  Future<List<ConfirmationModel>> getHistoryConfirmation({
+    int? month,
+    int? year,
+  }) async {
+    try {
+      final token = await SecureStorage.getToken();
+
+      if (token == null) {
+        throw Exception("Token tidak ditemukan");
+      }
+
+      final response = await _dio.get(
+        ApiConfig.confirmations,
+
+        queryParameters: {
+          if (month != null) "month": month,
+
+          if (year != null) "year": year,
+        },
+
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+
+            "Accept": "application/json",
+          },
+        ),
+      );
+
+      final List data = response.data['data'];
+
+      return data.map((item) => ConfirmationModel.fromJson(item)).toList();
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? e.message);
+    }
+  }
+
+  // ============================================
+  // DETAIL CONFIRMATION
+  // ============================================
+
+  Future<ConfirmationModel?> getConfirmationDetail(int id) async {
+    try {
+      final token = await SecureStorage.getToken();
+
+      if (token == null) {
+        throw Exception("Token tidak ditemukan");
+      }
+
+      final response = await _dio.get(
+        ApiConfig.confirmationDetail(id),
+
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+
+            "Accept": "application/json",
+          },
+        ),
+      );
+
+      if (response.data['data'] == null) {
+        return null;
+      }
 
       return ConfirmationModel.fromJson(response.data['data']);
     } on DioException catch (e) {
